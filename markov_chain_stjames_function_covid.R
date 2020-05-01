@@ -2,8 +2,7 @@
 
 
 
-behavior.sim<-function(room.orientation=c("left","right"),caretype=c("IV","Obs","Rounds"),numsequence,reducebetween=c("glove change", "ethanol","no change"),
-                       prob.patient.infect){
+behavior.sim<-function(room.orientation=c("left","right"),caretype=c("IV","Obs","Rounds"),numsequence,prob.patient.infect,numvisit){
    set.seed(34)
    require(truncdist)
   
@@ -41,16 +40,18 @@ behavior.sim<-function(room.orientation=c("left","right"),caretype=c("IV","Obs",
 
   for (j in 1:numsequence){
     
-    for (m in 1:4){
+    for (m in 1:numvisit){
       
       #determine reduction between patients...
-      if (reducebetween=="glove change"){
+      #if (reducebetween=="glove change"){
+      
         reducebtwneff<-0 #final conc from previous room will be multiplied by zero - no contamination
-      }else if (reducebetween=="ethanol"){
-        reducebtwneff<-(1/10^runif(1,2,4)) #divide final conc by efficacy (Kampf et al., 2020 min and max efficacies from carriage tests for ethanol)
-      }else{
-        reducebtwneff<-1 #final conc from previous room will be multiplied by 1 - no change in contamination
-      }
+        
+      #}else if (reducebetween=="ethanol"){
+      #  reducebtwneff<-(1/10^runif(1,2,4)) #divide final conc by efficacy (Kampf et al., 2020 min and max efficacies from carriage tests for ethanol)
+      #}else{
+      #  reducebtwneff<-1 #final conc from previous room will be multiplied by 1 - no change in contamination
+      #}
       
       behavior<-"In" #first behavior is "In"
       k<-2 #setting up k for while loop
@@ -89,6 +90,8 @@ behavior.sim<-function(room.orientation=c("left","right"),caretype=c("IV","Obs",
       #UPDATE
       
       #transfer efficiencies for non-patient surf
+      
+      #lambda hand--> surface and beta surface --> hand
       lambda[behavior!="Patient"]<-runif(length(lambda[behavior!="Patient"]),0.0003,.217)
       beta[behavior!="Patient"]<-runif(length(lambda[behavior!="Patient"]),0.0003,.217)
       
@@ -130,7 +133,7 @@ behavior.sim<-function(room.orientation=c("left","right"),caretype=c("IV","Obs",
       #Initialize fraction of hand used for contact
       SH<-rep(NA,length(behavior))
       
-      #fractional surface area for open hand grip
+      #fractional surface area for open hand grip; from AuYeung
       SH[behavior=="In" | behavior=="Out"]<-runif(length(SH[behavior=="In" | behavior=="Out"]),0.10,0.17) #min and max of left and right hands closed hand grip in AuYeung et al. (2008)
       
       #fractional surface area for patient contact (front partial fingers to full front palm with fingers)
@@ -168,10 +171,10 @@ behavior.sim<-function(room.orientation=c("left","right"),caretype=c("IV","Obs",
       
       if (m==1){
         if(hand[1]=="right"){
-          handR[1]<-0-beta[1]*SH[1]*(0-surfconc[1]*exp(-k.s[1]*duration[1]))
+          handR[1]<-beta[1]*SH[1]*(surfconc[1]*exp(-k.s[1]*duration[1]))
           handL[1]<-0  
         }else{ #if hand[1] == left...
-          handL[1]<-0-beta[1]*SH[1]*(0-surfconc[1]*exp(-k.s[1]*duration[1]))
+          handL[1]<-beta[1]*SH[1]*(surfconc[1]*exp(-k.s[1]*duration[1]))
           handR[1]<-0 
         }
       }else{
