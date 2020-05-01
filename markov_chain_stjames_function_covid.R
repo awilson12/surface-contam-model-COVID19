@@ -3,6 +3,9 @@
 
 
 behavior.sim<-function(room.orientation=c("left","right"),caretype=c("IV","Obs","Rounds"),numsequence,prob.patient.infect,numvisit){
+  
+  #numvisit is function of shift length and number of patients, # of care episodes
+  
    set.seed(34)
    require(truncdist)
   
