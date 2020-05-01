@@ -192,10 +192,7 @@ behavior.sim<-function(room.orientation=c("left","right"),caretype=c("IV","Obs",
       
       
       #---------------------------------- CALCULATION OF INFECTION RISK FOR CARE EPISODE --------------------------------------------------------------------------------------------------
-      
-      dose<-rep(NA,numsequence)
-      infect<-rep(NA,numsequence)
-      
+
       #read in bootstrapped values for dose-response
       exactbp<-read.csv('Exact_BetaPoisson_Bootstrap.csv')
       
@@ -287,13 +284,13 @@ behavior.sim<-function(room.orientation=c("left","right"),caretype=c("IV","Obs",
          infecttemp<-1*10^-15 #cannot have zero infection risk, so replace with small risk
        }
       
-      dose<-rep(dose,length(behavior))
-      infect<-rep(infecttemp,length(behavior))
+      doserep<-rep(dose,length(behavior))
+      infectrep<-rep(infecttemp,length(behavior))
       
       #saving concentrations for all rooms
       if (m==1){
-        doseall<-dose
-        infectall<-infect
+        doseall<-doserep
+        infectall<-infectrep
         handRall<-handR
         handLall<-handL
         handall<-hand
@@ -307,8 +304,8 @@ behavior.sim<-function(room.orientation=c("left","right"),caretype=c("IV","Obs",
         k.hall<-k.h
         durationall<-duration
       }else{
-        doseall<-c(doseall,dose)
-        infectall<-c(infectall,infect)
+        doseall<-c(doseall,doserep)
+        infectall<-c(infectall,infectrep)
         handRall<-c(handRall,handR)
         handLall<-c(handLall,handL)
         handall<-c(handall,hand)
