@@ -202,11 +202,92 @@ behavior.sim<-function(room.orientation=c("left","right"),caretype=c("IV","Obs",
       }
       
       
+      
       #saving final concentration hands to serve as initial concentration on hands for next room
       handRnext<-handR[a]
       handLnext<-handL[a]
       
-      #saving concentrations for all 4 rooms
+      #---------------------------------- CALCULATION OF INFECTION RISK FOR CARE EPISODE --------------------------------------------------------------------------------------------------
+      
+      dose<-rep(NA,numsequence)
+      infect<-rep(NA,numsequence)
+      
+      #read in bootstrapped values for dose-response
+      exactbp<-read.csv('Exact_BetaPoisson_Bootstrap.csv')
+      
+      require('gsl')
+      
+      for (b in 1:numsequence){
+        
+        #final concentration on hands after 4 episodes of cre
+        handRnext<- handR[a]
+        handLnext<- handL[a]
+        
+        #inactivation concentration on hands
+        kh<- k.h[a]
+        
+        #doffing....
+        
+        #1/10 participants had <0.00003% of original inoculum transfered to hands during doffing
+        
+        randomnum<-runif(1,0,1)
+        
+        if(randomnum<=0.1){
+          
+          handRnext<-handRnext*(3*10^-7) #assume % of viral titer in study represents transfer potential when doffing
+          handLnext<-handLnext*(3*10^-7) #assume % of viral titer in study represents transfer potential when doffing
+          
+          #ethanol hand rub (described by Kampf et al. 2020 as recommended step after doffing)
+          washnum<-runif(1,0,1)
+          
+          if (washnum<=.5){
+            #then they wash their hands
+            handRnext<-handRnext*(1/10^rtrunc(1,spec="norm",a=0,b=6,mean=1.62,sd=0.12)) #based on dist from Marco
+            handLnext<-handLnext*(1/10^rtrunc(1,spec="norm",a=0,b=6,mean=1.62,sd=0.12)) #based on dist from Marco
+          }else{
+            #otherwise they use hand sanitizer
+            handRnext<-handRnext*(1/10^runif(1,2,4)) #based on Kampf et al. (2020)
+            handLnext<-handLnext*(1/10^runif(1,2,4)) #based on Kampf et al. (2020)
+          }
+          
+          #Determines which hand will be used for the hand-to-face contact
+          whichhand<-runif(1,0,1)
+          
+          #transfer efficiency to mouth
+          TE<-.3390 #Rusin et al. (2002)
+          
+          #fraction of hand used in mouth contact
+          SM<-runif(1,0.04/5, 0.06/5) #single fingertip surface area fraction = front partial fingers fractional surface area / 5
+          
+          #hand surface area
+          AH<-runif(1,445,535) #Beamer et al. (2015) office model and from Exposure Factors Handbook
+          
+          if (whichhand<=.5){
+            dose<-handLnext*TE*SM*AH*exp(-kh) #assuming duration of 1 second
+          }else{
+            dose<-handRnext*TE*SM*AH*exp(-kh) #assuming duration of 1 second
+          }
+          
+        }else{
+          
+          #if no contam while doffing, then handwashing wouldn't change concentration
+          #and therefore would not change dose
+          dose[b]<-0
+          
+        }
+        pair<-sample(c(1:length(exactbp$ln.alpha.)),1)
+        infect[b]<-1-hyperg_1F1(exactbp$alpha[pair], exactbp$alpha[pair]+exactbp$Beta[pair], -dose[b], give=FALSE, strict=TRUE)
+        
+       if(infect[b]==0){
+         infect[b]<-1*10^-15 #cannot have zero infection risk, so replace with small risk
+       }
+        
+      }
+      
+      dose<<-dose
+      infect<<-infect
+      
+      #saving concentrations for all rooms
       if (m==1){
         handRall<-handR
         handLall<-handL
@@ -249,85 +330,6 @@ behavior.sim<-function(room.orientation=c("left","right"),caretype=c("IV","Obs",
   behavior.total<<-behavior.total
   exposure.frame<<-exposure.frame
   
-  #---------------------------------- CALCULATION OF INFECTION RISK --------------------------------------------------------------------------------------------------
-  
-  dose<-rep(NA,numsequence)
-  infect<-rep(NA,numsequence)
-  
-  #read in bootstrapped values for dose-response
-  exactbp<-read.csv('Exact_BetaPoisson_Bootstrap.csv')
-  
-  require('gsl')
-  
-  for (b in 1:numsequence){
-    
-    #final concentration on hands after 4 episodes of cre
-    righthand<- exposure.frame[[b]]$handR[length(exposure.frame[[b]]$patientnum)]
-    lefthand<- exposure.frame[[b]]$handL[length(exposure.frame[[b]]$patientnum)]
-    
-    #inactivation concentration on hands
-    kh<- exposure.frame[[b]]$k.hall[length(exposure.frame[[b]]$patientnum)]
-    
-    #doffing....
-    
-    #1/10 participants had <0.00003% of original inoculum transfered to hands during doffing
-    
-    randomnum<-runif(1,0,1)
-    
-    if(randomnum<=0.1){
-      
-    righthand<-righthand*(3*10^-7) #assume % of viral titer in study represents transfer potential when doffing
-    lefthand<-lefthand*(3*10^-7) #assume % of viral titer in study represents transfer potential when doffing
-    
-    #ethanol hand rub (described by Kampf et al. 2020 as recommended step after doffing)
-    washnum<-runif(1,0,1)
-    
-    if (washnum<=.5){
-      #then they wash their hands
-      righthand<-righthand*(1/10^rtrunc(1,spec="norm",a=0,b=6,mean=1.62,sd=0.12)) #based on dist from Marco
-      lefthand<-lefthand*(1/10^rtrunc(1,spec="norm",a=0,b=6,mean=1.62,sd=0.12)) #based on dist from Marco
-    }else{
-      #otherwise they use hand sanitizer
-      righthand<-righthand*(1/10^runif(1,2,4)) #based on Kampf et al. (2020)
-      lefthand<-lefthand*(1/10^runif(1,2,4)) #based on Kampf et al. (2020)
-    }
-    
-    #Determines which hand will be used for the hand-to-face contact
-    whichhand<-runif(1,0,1)
-    
-    #transfer efficiency to mouth
-    TE<-.3390 #Rusin et al. (2002)
-      
-    #fraction of hand used in mouth contact
-    SM<-runif(1,0.04/5, 0.06/5) #single fingertip surface area fraction = front partial fingers fractional surface area / 5
-      
-    #hand surface area
-    AH<-runif(1,445,535) #Beamer et al. (2015) office model and from Exposure Factors Handbook
-    
-    if (whichhand<=.5){
-      dose[b]<-lefthand*TE*SM*AH*exp(-kh) #assuming duration of 1 second
-    }else{
-      dose[b]<-righthand*TE*SM*AH*exp(-kh) #assuming duration of 1 second
-    }
-      
-    }else{
-      
-    #if no contam while doffing, then handwashing wouldn't change concentration
-    #and therefore would not change dose
-    dose[b]<-0
-    dose[b]<-lefthand<-0
-    
-    }
-    pair<-sample(c(1:length(exactbp$ln.alpha.)),1)
-    infect[b]<-1-hyperg_1F1(exactbp$alpha[pair], exactbp$alpha[pair]+exactbp$Beta[pair], -dose[b], give=FALSE, strict=TRUE)
-    
-      
-  }
-  
-  dose<<-dose
-  infect<<-infect
-  
-  #print("Order up! :)")
   
 }
 
