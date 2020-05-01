@@ -244,19 +244,38 @@ behavior.sim<-function(room.orientation=c("left","right"),caretype=c("IV","Obs",
           #hand surface area
           AHtemp<-runif(1,445,535) #Beamer et al. (2015) office model and from Exposure Factors Handbook
           
-          if (whichhand<=.5){
-            dose<-handLnext*TEtemp*SMtemp*AHtemp*exp(-khtemp) #assuming duration of 1 second
-            handLnext<-(1-TEtemp*SMtemp)*handLnext*exp(-khtemp)
+          if (m==1){
+            #if this is the first episode of care, this is our first dose
+            if (whichhand<=.5){
+              dose<-handLnext*TEtemp*SMtemp*AHtemp*exp(-khtemp) #assuming duration of 1 second
+              handLnext<-(1-TEtemp*SMtemp)*handLnext*exp(-khtemp)
+            }else{
+              dose<-handRnext*TEtemp*SMtemp*AHtemp*exp(-khtemp) #assuming duration of 1 second
+              handRnext<-(1-TEtemp*SMtemp)*handRnext*exp(-khtemp)
+            }
           }else{
-            dose<-handRnext*TEtemp*SMtemp*AHtemp*exp(-khtemp) #assuming duration of 1 second
-            handRnext<-(1-TEtemp*SMtemp)*handRnext*exp(-khtemp)
+            #otherwise, we're adding onto our cumulative dose
+            if (whichhand<=.5){
+              dose<-dose+handLnext*TEtemp*SMtemp*AHtemp*exp(-khtemp) #assuming duration of 1 second
+              handLnext<-(1-TEtemp*SMtemp)*handLnext*exp(-khtemp)
+            }else{
+              dose<-dose+handRnext*TEtemp*SMtemp*AHtemp*exp(-khtemp) #assuming duration of 1 second
+              handRnext<-(1-TEtemp*SMtemp)*handRnext*exp(-khtemp)
+            }
           }
+         
           
         }else{ #(if they do not self contaminate...)
           
           #if no contam while doffing, then handwashing wouldn't change concentration
           #and therefore would not change dose
-          dose<-0
+          if (m==1){
+            #if this is then the first episode of care, dose would be zero
+            dose<-0
+          }else{
+            #otherwise, it's equal to the previous dose (no change in cumulative dose)
+            dose<-dose
+          }
           handRnext<-0 #no contamination for next care episode
           handLnext<-0 #no contamination for next care episode
           
