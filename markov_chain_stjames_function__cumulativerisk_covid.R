@@ -339,4 +339,4 @@ behavior.sim<-function(room.orientation=c("left","right"),caretype=c("IV","Obs",
 
 #------------------------------------------ IV care---------------------------------------------------------------------
 
-behavior.sim(room.orientation="left",caretype="IV",numsequence=500,prob.patient.infect=.25,numvisit = 4,prob.contam.between = .1)
+behavior.sim(room.orientation="left",caretype="IV",numsequence=500,prob.patient.infect=.25,numvisit = 4,prob.contam.between = 1)
