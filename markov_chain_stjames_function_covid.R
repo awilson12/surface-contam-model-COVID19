@@ -2,7 +2,7 @@
 
 
 
-behavior.sim<-function(room.orientation=c("left","right"),caretype=c("IV","Obs","Rounds"),numsequence,prob.patient.infect,numvisit){
+behavior.sim<-function(room.orientation=c("left","right"),caretype=c("IV","Obs","Rounds"),numsequence,prob.patient.infect,numvisit,prob.contam.between){
   
   #numvisit is function of shift length and number of patients, # of care episodes
   
@@ -44,17 +44,6 @@ behavior.sim<-function(room.orientation=c("left","right"),caretype=c("IV","Obs",
   for (j in 1:numsequence){
     
     for (m in 1:numvisit){
-      
-      #determine reduction between patients...
-      #if (reducebetween=="glove change"){
-      
-        reducebtwneff<-0 #final conc from previous room will be multiplied by zero - no contamination
-        
-      #}else if (reducebetween=="ethanol"){
-      #  reducebtwneff<-(1/10^runif(1,2,4)) #divide final conc by efficacy (Kampf et al., 2020 min and max efficacies from carriage tests for ethanol)
-      #}else{
-      #  reducebtwneff<-1 #final conc from previous room will be multiplied by 1 - no change in contamination
-      #}
       
       behavior<-"In" #first behavior is "In"
       k<-2 #setting up k for while loop
@@ -181,8 +170,8 @@ behavior.sim<-function(room.orientation=c("left","right"),caretype=c("IV","Obs",
           handR[1]<-0 
         }
       }else{
-        handR[1]<-handRnext*reducebtwneff
-        handL[1]<-handLnext*reducebtwneff
+        handR[1]<-handRnext
+        handL[1]<-handLnext
       }
       
       for (a in 2:(length(behavior))){
@@ -202,11 +191,6 @@ behavior.sim<-function(room.orientation=c("left","right"),caretype=c("IV","Obs",
       }
       
       
-      
-      #saving final concentration hands to serve as initial concentration on hands for next room
-      handRnext<-handR[a]
-      handLnext<-handL[a]
-      
       #---------------------------------- CALCULATION OF INFECTION RISK FOR CARE EPISODE --------------------------------------------------------------------------------------------------
       
       dose<-rep(NA,numsequence)
@@ -216,15 +200,13 @@ behavior.sim<-function(room.orientation=c("left","right"),caretype=c("IV","Obs",
       exactbp<-read.csv('Exact_BetaPoisson_Bootstrap.csv')
       
       require('gsl')
-      
-      for (b in 1:numsequence){
         
-        #final concentration on hands after 4 episodes of cre
+        #final concentration on hands a episode of care
         handRnext<- handR[a]
         handLnext<- handL[a]
         
         #inactivation concentration on hands
-        kh<- k.h[a]
+        khtemp<- k.h[a]
         
         #doffing....
         
@@ -232,7 +214,7 @@ behavior.sim<-function(room.orientation=c("left","right"),caretype=c("IV","Obs",
         
         randomnum<-runif(1,0,1)
         
-        if(randomnum<=0.1){
+        if(randomnum<=prob.contam.between){
           
           handRnext<-handRnext*(3*10^-7) #assume % of viral titer in study represents transfer potential when doffing
           handLnext<-handLnext*(3*10^-7) #assume % of viral titer in study represents transfer potential when doffing
@@ -254,41 +236,45 @@ behavior.sim<-function(room.orientation=c("left","right"),caretype=c("IV","Obs",
           whichhand<-runif(1,0,1)
           
           #transfer efficiency to mouth
-          TE<-.3390 #Rusin et al. (2002)
+          TEtemp<-.3390 #Rusin et al. (2002)
           
           #fraction of hand used in mouth contact
-          SM<-runif(1,0.04/5, 0.06/5) #single fingertip surface area fraction = front partial fingers fractional surface area / 5
+          SMtemp<-runif(1,0.04/5, 0.06/5) #single fingertip surface area fraction = front partial fingers fractional surface area / 5
           
           #hand surface area
-          AH<-runif(1,445,535) #Beamer et al. (2015) office model and from Exposure Factors Handbook
+          AHtemp<-runif(1,445,535) #Beamer et al. (2015) office model and from Exposure Factors Handbook
           
           if (whichhand<=.5){
-            dose<-handLnext*TE*SM*AH*exp(-kh) #assuming duration of 1 second
+            dose<-handLnext*TEtemp*SMtemp*AHtemp*exp(-khtemp) #assuming duration of 1 second
+            handLnext<-(1-TEtemp*SMtemp)*handLnext*exp(-khtemp)
           }else{
-            dose<-handRnext*TE*SM*AH*exp(-kh) #assuming duration of 1 second
+            dose<-handRnext*TEtemp*SMtemp*AHtemp*exp(-khtemp) #assuming duration of 1 second
+            handRnext<-(1-TEtemp*SMtemp)*handRnext*exp(-khtemp)
           }
           
-        }else{
+        }else{ #(if they do not self contaminate...)
           
           #if no contam while doffing, then handwashing wouldn't change concentration
           #and therefore would not change dose
-          dose[b]<-0
+          dose<-0
+          handRnext<-0 #no contamination for next care episode
+          handLnext<-0 #no contamination for next care episode
           
         }
         pair<-sample(c(1:length(exactbp$ln.alpha.)),1)
-        infect[b]<-1-hyperg_1F1(exactbp$alpha[pair], exactbp$alpha[pair]+exactbp$Beta[pair], -dose[b], give=FALSE, strict=TRUE)
+        infecttemp<-1-hyperg_1F1(exactbp$alpha[pair], exactbp$alpha[pair]+exactbp$Beta[pair], -dose, give=FALSE, strict=TRUE)
         
-       if(infect[b]==0){
-         infect[b]<-1*10^-15 #cannot have zero infection risk, so replace with small risk
+       if(infecttemp==0){
+         infecttemp<-1*10^-15 #cannot have zero infection risk, so replace with small risk
        }
-        
-      }
       
-      dose<<-dose
-      infect<<-infect
+      dose<-rep(dose,length(behavior))
+      infect<-rep(infecttemp,length(behavior))
       
       #saving concentrations for all rooms
       if (m==1){
+        doseall<-dose
+        infectall<-infect
         handRall<-handR
         handLall<-handL
         handall<-hand
@@ -302,6 +288,8 @@ behavior.sim<-function(room.orientation=c("left","right"),caretype=c("IV","Obs",
         k.hall<-k.h
         durationall<-duration
       }else{
+        doseall<-c(doseall,dose)
+        infectall<-c(infectall,infect)
         handRall<-c(handRall,handR)
         handLall<-c(handLall,handL)
         handall<-c(handall,hand)
@@ -320,7 +308,7 @@ behavior.sim<-function(room.orientation=c("left","right"),caretype=c("IV","Obs",
     
   
     # -------------------------------- SAVE OUTPUT FOR SIMULATION FOR SINGLE PERSON ----------------------------------------------------------------------------------
-    exposure.frame.temp<-data.frame(patientnum=patientnum,handR=handRall,handL=handLall,hand=handall,behavior=behaviorall,duration=durationall,SH=SHall,lambda=lambdaall,beta=betaall,surfconc=surfconcall,k.sall=k.sall,k.hall=k.hall)
+    exposure.frame.temp<-data.frame(dose=doseall,infect=infectall,patientnum=patientnum,handR=handRall,handL=handLall,hand=handall,behavior=behaviorall,duration=durationall,SH=SHall,lambda=lambdaall,beta=betaall,surfconc=surfconcall,k.sall=k.sall,k.hall=k.hall)
     behavior.total[[j]]<-behavior
     exposure.frame[[j]]<-exposure.frame.temp
 
@@ -335,84 +323,4 @@ behavior.sim<-function(room.orientation=c("left","right"),caretype=c("IV","Obs",
 
 #------------------------------------------ IV care---------------------------------------------------------------------
 
-behavior.sim(room.orientation="left",caretype="IV",numsequence=500,reducebetween="no change",prob.patient.infect=.25)
-infect.left.IV.nochange<-infect
-behavior.sim(room.orientation="right",caretype="IV",numsequence=500,reducebetween="no change",prob.patient.infect=.25)
-infect.right.IV.nochange<-infect
-
-behavior.sim(room.orientation="left",caretype="IV",numsequence=500,reducebetween="glove change",prob.patient.infect=.25)
-infect.left.IV.glovechange<-infect
-behavior.sim(room.orientation="right",caretype="IV",numsequence=500,reducebetween="glove change",prob.patient.infect=.25)
-infect.right.IV.glovechange<-infect
-
-behavior.sim(room.orientation="left",caretype="IV",numsequence=500,reducebetween="ethanol",prob.patient.infect=.25)
-infect.left.IV.ethanol<-infect
-behavior.sim(room.orientation="right",caretype="IV",numsequence=500,reducebetween="ethanol",prob.patient.infect=.25)
-infect.right.IV.ethanol<-infect
-
-
-#---------------------------------------Rounds Care ------------------------------------------------------------------
-
-behavior.sim(room.orientation="left",caretype="Rounds",numsequence=500,reducebetween="no change",prob.patient.infect=.25)
-infect.left.rounds.nochange<-infect
-behavior.sim(room.orientation="right",caretype="Rounds",numsequence=500,reducebetween="no change",prob.patient.infect=.25)
-infect.right.rounds.nochange<-infect
-
-behavior.sim(room.orientation="left",caretype="Rounds",numsequence=500,reducebetween="glove change",prob.patient.infect=.25)
-infect.left.rounds.glovechange<-infect
-behavior.sim(room.orientation="right",caretype="Rounds",numsequence=500,reducebetween="glove change",prob.patient.infect=.25)
-infect.right.rounds.glovechange<-infect
-
-behavior.sim(room.orientation="left",caretype="Rounds",numsequence=500,reducebetween="ethanol",prob.patient.infect=.25)
-infect.left.rounds.ethanol<-infect
-behavior.sim(room.orientation="right",caretype="Rounds",numsequence=500,reducebetween="ethanol",prob.patient.infect=.25)
-infect.right.rounds.ethanol<-infect
-
-#---------------------------------------Observational care ----------------------------------------------------------------
-
-behavior.sim(room.orientation="left",caretype="Obs",numsequence=500,reducebetween="no change",prob.patient.infect=.25)
-infect.left.obs.nochange<-infect
-behavior.sim(room.orientation="right",caretype="Obs",numsequence=500,reducebetween="no change",prob.patient.infect=.25)
-infect.right.obs.nochange<-infect
-
-behavior.sim(room.orientation="left",caretype="Obs",numsequence=500,reducebetween="glove change",prob.patient.infect=.25)
-infect.left.obs.glovechange<-infect
-behavior.sim(room.orientation="right",caretype="Obs",numsequence=500,reducebetween="glove change",prob.patient.infect=.25)
-infect.right.obs.glovechange<-infect
-
-behavior.sim(room.orientation="left",caretype="Obs",numsequence=500,reducebetween="ethanol",prob.patient.infect=.25)
-infect.left.obs.ethanol<-infect
-behavior.sim(room.orientation="right",caretype="Obs",numsequence=500,reducebetween="ethanol",prob.patient.infect=.25)
-infect.right.obs.ethanol<-infect
-
-#--------------------------------------------------------------------------------------------------------------------------
-
-infectall<-c(infect.left.IV.nochange,infect.right.IV.nochange,
-             infect.left.IV.ethanol,infect.right.IV.ethanol,
-             infect.left.IV.glovechange,infect.right.IV.glovechange,
-             
-             infect.left.rounds.nochange,infect.right.rounds.nochange,
-             infect.left.rounds.ethanol,infect.right.rounds.ethanol,
-             infect.left.rounds.glovechange,infect.right.rounds.glovechange,
-             
-             infect.left.obs.nochange,infect.right.obs.nochange,
-             infect.left.obs.ethanol,infect.right.obs.ethanol,
-             infect.left.obs.glovechange,infect.right.obs.glovechange)
-
-caretype<-c(rep("IV",length(c(infect.left.IV.nochange,infect.right.IV.nochange,
-                              infect.left.IV.ethanol,infect.right.IV.ethanol,
-                              infect.left.IV.glovechange,infect.right.IV.glovechange))),
-            
-            rep("Rounds",length(c(infect.left.rounds.nochange,infect.right.rounds.nochange,
-                                  infect.left.rounds.ethanol,infect.right.rounds.ethanol,
-                                  infect.left.rounds.glovechange,infect.right.rounds.glovechange))),
-            
-            rep("Obs",length(c(infect.left.obs.nochange,infect.right.obs.nochange,
-                               infect.left.obs.ethanol,infect.right.obs.ethanol,
-                               infect.left.obs.glovechange,infect.right.obs.glovechange))))
-
-intervention<-rep(c(rep("No Change",1000),rep("Ethanol",1000),rep("Glove Change",1000)),3)
-
-frameall<-data.frame(infect=infectall,care=caretype,intervention=intervention)
-
-print("Order up! :)")
+behavior.sim(room.orientation="left",caretype="IV",numsequence=500,prob.patient.infect=.25,numvisit = 4,prob.contam.between = .1)
