@@ -2,7 +2,11 @@
 #RUN THIS PIECE FIRST BEFORE RUNNING FUNCTION CODE
 
 # using Marco's Markov chains to simulate different contact behaviors
-library(readr)
+if("readr" %in% rownames(installed.packages())==FALSE){install.packages("readr"); require(readr)}else{require(readr)}
+if("plyr" %in% rownames(installed.packages())==FALSE){install.packages("plyr"); require(plyr)}else{require(plyr)}
+if("markovchain" %in% rownames(installed.packages())==FALSE){install.packages("markovchain"); require(markovchain)}else{require(markovchain)}
+
+#library(readr)
 movsdf.rbind <- read_csv("movsdf.rbind_orientationcorrected.csv")
 
 for(i in 1:length(table(movsdf.rbind$ActivityID))){
@@ -24,7 +28,7 @@ for(i in 1:length(table(movsdf.rbind$ActivityID))){
 #####
 # 2.3 Aggregating surfaces into categories for Transition Matrices
 #detach("package:dplyr", unload = TRUE)
-library(plyr)
+#library(plyr)
 movsdf.rbind.new$SurfaceCategories<-revalue(movsdf.rbind.new$Surface,c("In"="In",
                                                                        "Door"="FarPatient",
                                                                        "Other"="FarPatient",
