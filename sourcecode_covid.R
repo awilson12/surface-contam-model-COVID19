@@ -13,13 +13,6 @@ suppressMessages(suppressWarnings(source("adjust_behaviors_covid.R")))
 
 #---------------------------------- NOW RUN FUNCTION FILE & SIMULATIONS ---------------------------------------------------------------------------
 
-suppressMessages(suppressWarnings(source("markov_chain_stjames_function_covid.R")))
+suppressMessages(suppressWarnings(source("markov_chain_stjames_function__cumulativerisk_covid_automated.R")))
 
-#---------------------------------- RUN LOOP THAT MARK CREATES FOR SIMULATION RUNS ----------------------------------------------
-
-
-#---------------------------------- PLOTTING -----------------------------------------------------------------------------
-
-require(ggplot2)
-require(ggpubr)
 

@@ -381,6 +381,8 @@ behavior.sim<-function(room.orientation=c("left","right"),caretype=c("IV","Obs",
 
 behavior.sim(room.orientation="left",caretype="IV",numsequence=500,prob.patient.infect=.25,numvisit = 4,prob.contam.between = 1)
 
-  test <- exposure.frame.temp; write.csv(test, file="TEST.csv")
+  #test <- exposure.frame; write.csv(exposure.frame, file="TEST.csv")
+  
+  saveRDS(exposure.frame, file="exposure.frame.rds")
   
   } # Automation loop end
