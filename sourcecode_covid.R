@@ -7,11 +7,7 @@ rm(list=ls())
 
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 
-#------------------------------------------ RUN BEHAVIOR PIECE ------------------------------------------------------------------------------------
-
-suppressMessages(suppressWarnings(source("adjust_behaviors_covid.R")))
-
-#---------------------------------- NOW RUN FUNCTION FILE & SIMULATIONS ---------------------------------------------------------------------------
+#------------------------------------------ Run behavior code, simulation function code, and automation ---------------------------------------------------------------------------
 
 suppressMessages(suppressWarnings(source("markov_chain_stjames_function__cumulativerisk_covid_automated.R")))
 
