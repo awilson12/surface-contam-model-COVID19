@@ -40,9 +40,6 @@ for(j in 1:NUM.SIM)
   if(sim.name=="DILP"){if(dir.exists("DILP")==FALSE){dir.create("DILP"); setwd("DILP")}else{setwd("DILP")}}
   if(sim.name=="DIHP"){if(dir.exists("DIHP")==FALSE){dir.create("DIHP"); setwd("DIHP")}else{setwd("DIHP")}}
 
-  setwd(this.dir)
-  
-
 # MASTER FUNCTION ----
 behavior.sim<-function(room.orientation=c("left","right"),caretype=c("IV","Obs","Rounds"),numsequence,prob.patient.infect,numvisit,prob.contam.between){
   
@@ -381,8 +378,12 @@ behavior.sim<-function(room.orientation=c("left","right"),caretype=c("IV","Obs",
 
 behavior.sim(room.orientation="left",caretype="IV",numsequence=500,prob.patient.infect=.25,numvisit = 4,prob.contam.between = 1)
 
-  #test <- exposure.frame; write.csv(exposure.frame, file="TEST.csv")
+  #test <- as.data.frame(exposure.frame[[1]]); write.csv(exposure.frame[[1]], file="TEST.csv")
   
+  #saving list of data frames from all simulations
   saveRDS(exposure.frame, file="exposure.frame.rds")
+  
+  #reset directory to parent folder so we can go to correct subfolder within parent folder for next sim run
+  setwd(this.dir)
   
   } # Automation loop end
