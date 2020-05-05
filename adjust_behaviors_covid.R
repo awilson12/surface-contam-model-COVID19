@@ -7,7 +7,7 @@ if("plyr" %in% rownames(installed.packages())==FALSE){install.packages("plyr"); 
 if("markovchain" %in% rownames(installed.packages())==FALSE){install.packages("markovchain"); require(markovchain)}else{require(markovchain)}
 
 #library(readr)
-movsdf.rbind <- read_csv("movsdf.rbind_orientationcorrected.csv")
+movsdf.rbind <- read.csv("movsdf.rbind_orientationcorrected.csv")
 
 for(i in 1:length(table(movsdf.rbind$ActivityID))){
   if (i==1){
