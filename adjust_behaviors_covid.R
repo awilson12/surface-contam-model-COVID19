@@ -52,31 +52,22 @@ movsdf.rbind.new$SurfaceCategories<-revalue(movsdf.rbind.new$Surface,c("In"="In"
 # Creating lists so we don't count transitions between "out" and first state of next observed episode
 # It looksl ike Activity ID is unique per observation
 
-TObs.left.list<-list()
-TObs.right.list<-list()
-TIV.left.list<-list()
-TIV.right.list<-list()
-TRounds.left.list<-list()
-TRounds.right.list<-list()
+TObs.list<-list()
+TIV.list<-list()
+TRounds.list<-list()
 
 for (i in 1:max(movsdf.rbind.new$ActivityID)){
-  TObs.left.list[[i]]<-movsdf.rbind.new$SurfaceCategories[movsdf.rbind.new$CareType=="Obs" & movsdf.rbind.new$Orientation=="leftFacing" & movsdf.rbind.new$ActivityID==i]
-  TObs.right.list[[i]]<-movsdf.rbind.new$SurfaceCategories[movsdf.rbind.new$CareType=="Obs" & movsdf.rbind.new$Orientation=="rightFacing" & movsdf.rbind.new$ActivityID==i]
+  TObs.list[[i]]<-movsdf.rbind.new$SurfaceCategories[movsdf.rbind.new$CareType=="Obs" & movsdf.rbind.new$ActivityID==i]
   
-  TIV.left.list[[i]]<-movsdf.rbind.new$SurfaceCategories[movsdf.rbind.new$CareType=="IV" & movsdf.rbind.new$Orientation=="leftFacing" & movsdf.rbind.new$ActivityID==i]
-  TIV.right.list[[i]]<-movsdf.rbind.new$SurfaceCategories[movsdf.rbind.new$CareType=="IV" & movsdf.rbind.new$Orientation=="rightFacing" & movsdf.rbind.new$ActivityID==i]
-  
-  TRounds.left.list[[i]]<-movsdf.rbind.new$SurfaceCategories[movsdf.rbind.new$CareType=="Rounds" & movsdf.rbind.new$Orientation=="leftFacing" & movsdf.rbind.new$ActivityID==i]
-  TRounds.right.list[[i]]<-movsdf.rbind.new$SurfaceCategories[movsdf.rbind.new$CareType=="Rounds" & movsdf.rbind.new$Orientation=="rightFacing" & movsdf.rbind.new$ActivityID==i]
+  TIV.list[[i]]<-movsdf.rbind.new$SurfaceCategories[movsdf.rbind.new$CareType=="IV" & movsdf.rbind.new$ActivityID==i]
+   
+  TRounds.list[[i]]<-movsdf.rbind.new$SurfaceCategories[movsdf.rbind.new$CareType=="Rounds" & movsdf.rbind.new$ActivityID==i]
   
 }
 
 require(markovchain)
-TObs.left<-markovchainFit(TObs.left.list)
-TObs.right<-markovchainFit(TObs.right.list)
+TObs<-markovchainFit(TObs.list)
 
-TIV.left<-markovchainFit(TIV.left.list)
-TIV.right<-markovchainFit(TIV.right.list)
+TIV<-markovchainFit(TIV.list)
 
-TRounds.left<-markovchainFit(TRounds.left.list)
-TRounds.right<-markovchainFit(TRounds.right.list)
+TRounds<-markovchainFit(TRounds.list)
