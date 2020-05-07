@@ -41,7 +41,7 @@ for(j in 1:NUM.SIM)
   if(sim.name=="DIHP"){if(dir.exists("DIHP")==FALSE){dir.create("DIHP"); setwd("DIHP")}else{setwd("DIHP")}}
 
 # MASTER FUNCTION ----
-behavior.sim<-function(room.orientation=c("left","right"),caretype=c("IV","Obs","Rounds"),numsequence,prob.patient.infect,numvisit,prob.contam.between){
+behavior.sim<-function(caretype=c("IV","Obs","Rounds"),numsequence,prob.patient.infect,numvisit,prob.contam.between){
   
   #numvisit is function of shift length and number of patients, # of care episodes
   
@@ -60,23 +60,15 @@ behavior.sim<-function(room.orientation=c("left","right"),caretype=c("IV","Obs",
   exposure.frame<-list() #creating a list to store exposure.frame data.frames
   
   #set up matrix for type of care
-  if (room.orientation=="left"){
+
     if (caretype=="IV"){
-      prob.mat<-TIV.left$estimate #left-facing, IV
+      prob.mat<-TIV$estimate #IV
     }else if (caretype=="Obs"){
-      prob.mat<-TObs.left$estimate #left-facing, Obs
+      prob.mat<-TObs$estimate #Obs
     }else{
-      prob.mat<-TRounds.left$estimate #left-facing, Rounds
+      prob.mat<-TRounds$estimate #Rounds
     }
-  }else{
-    if (caretype=="IV"){
-      prob.mat<-TIV.right$estimate #right-facing IV
-    }else if (caretype=="Obs"){
-      prob.mat<-TObs.right$estimate #right-facing Obs
-    }else{
-      prob.mat<-TRounds.right$estimate #right-facing Rounds
-    }
-  }
+ 
   
 
   for (j in 1:numsequence){
@@ -376,7 +368,7 @@ behavior.sim<-function(room.orientation=c("left","right"),caretype=c("IV","Obs",
 
 #------------------------------------------ IV care---------------------------------------------------------------------
 
-behavior.sim(room.orientation="left",caretype="IV",numsequence=500,prob.patient.infect=.25,numvisit = 4,prob.contam.between = 1)
+behavior.sim(caretype="IV",numsequence=500,prob.patient.infect=.25,numvisit = 4,prob.contam.between = 1)
 
   #test <- as.data.frame(exposure.frame[[1]]); write.csv(exposure.frame[[1]], file="TEST.csv")
   
