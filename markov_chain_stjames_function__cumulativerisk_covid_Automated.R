@@ -23,23 +23,38 @@ suppressMessages(source("adjust_behaviors_covid.R"))
 
 # AUTOMATION ----
 # Next line will be the names of the simulations that will be run. DCLP is Doffing correct and low patient numbers
-# DCHP is Doffing correct high patient numbers ... for the combinations of actions that can ocurr.
-SIM <- c("Doffing Correct","Doffing Incorrect","Low No Patients","High No Patients", "DCLP", "DCHP","DILP","DIHP")   
+
+#DP=doffing poor; DO=doffing ok; DG=doffing great
+#LP=low prob COVID-19; HP=high prob COVID-19
+#NS=non-surge (low # patient visits); S=surge (high # patient visits)
+#control=1 patient visit, 100% prob of COVID-19 patient
+
+SIM <- c("DPLPNS", "DPLPS","DPHPNS","DPHPS",
+         "DOLPNS","DOLPS","DOHPNS","DOHPS",
+         "DGLPNS","DGLPS","DGHPNS","DGHPS","control")   
+
 NUM.SIM <- length(SIM)     # Count the number of iterations for the automated simulations
 
 for(j in 1:NUM.SIM)
 {
   sim.num <- j; sim.name <- SIM[j]
   
-  if(sim.name=="Doffing Correct"){if(dir.exists("DC")==FALSE){dir.create("DC"); setwd("DC")}else{setwd("DC")}}
-  if(sim.name=="Doffing Incorrect"){if(dir.exists("DI")==FALSE){dir.create("DI"); setwd("DI")}else{setwd("DI")}}
-  if(sim.name=="Low No Patients"){if(dir.exists("LP")==FALSE){dir.create("LP"); setwd("LP")}else{setwd("LP")}}
-  if(sim.name=="High No Patients"){if(dir.exists("HP")==FALSE){dir.create("HP"); setwd("HP")}else{setwd("HP")}}
-  if(sim.name=="DCLP"){if(dir.exists("DCLP")==FALSE){dir.create("DCLP"); setwd("DCLP")}else{setwd("DCLP")}}
-  if(sim.name=="DCHP"){if(dir.exists("DCHP")==FALSE){dir.create("DCHP"); setwd("DCHP")}else{setwd("DCHP")}}
-  if(sim.name=="DILP"){if(dir.exists("DILP")==FALSE){dir.create("DILP"); setwd("DILP")}else{setwd("DILP")}}
-  if(sim.name=="DIHP"){if(dir.exists("DIHP")==FALSE){dir.create("DIHP"); setwd("DIHP")}else{setwd("DIHP")}}
+  if(sim.name=="DPLPNS"){if(dir.exists("DPLPNS")==FALSE){dir.create("DPLPNS"); setwd("DPLPNS")}else{setwd("DPLPNS")}}
+  if(sim.name=="DPLPS"){if(dir.exists("DPLPS")==FALSE){dir.create("DPLPS"); setwd("DPLPS")}else{setwd("DPLPS")}}
+  if(sim.name=="DPHPNS"){if(dir.exists("DPHPNS")==FALSE){dir.create("DPHPNS"); setwd("DPHPNS")}else{setwd("DPHPNS")}}
+  if(sim.name=="DPHPS"){if(dir.exists("DPHPS")==FALSE){dir.create("DPHPS"); setwd("DPHPS")}else{setwd("DPHPS")}}
 
+  if(sim.name=="DOLPNS"){if(dir.exists("DOLPNS")==FALSE){dir.create("DOLPNS"); setwd("DOLPNS")}else{setwd("DOLPNS")}}
+  if(sim.name=="DOLPS"){if(dir.exists("DOLPS")==FALSE){dir.create("DOLPS"); setwd("DOLPS")}else{setwd("DOLPS")}}
+  if(sim.name=="DOHPNS"){if(dir.exists("DOHPNS")==FALSE){dir.create("DOHPNS"); setwd("DOHPNS")}else{setwd("DOHPNS")}}
+  if(sim.name=="DOHPS"){if(dir.exists("DOHPS")==FALSE){dir.create("DOHPS"); setwd("DOHPS")}else{setwd("DOHPS")}}
+  
+  if(sim.name=="DGLPNS"){if(dir.exists("DGLPNS")==FALSE){dir.create("DGLPNS"); setwd("DGLPNS")}else{setwd("DGLPNS")}}
+  if(sim.name=="DGLPS"){if(dir.exists("DGLPS")==FALSE){dir.create("DGLPS"); setwd("DGLPS")}else{setwd("DGLPS")}}
+  if(sim.name=="DGHPNS"){if(dir.exists("DGHPNS")==FALSE){dir.create("DGHPNS"); setwd("DGHPNS")}else{setwd("DGHPNS")}}
+  if(sim.name=="DGHPS"){if(dir.exists("DGHPS")==FALSE){dir.create("DGHPS"); setwd("DGHPS")}else{setwd("DGHPS")}}
+  
+  
 # MASTER FUNCTION ----
 behavior.sim<-function(caretype=c("IV","Obs","Rounds"),numsequence,prob.patient.infect,numvisit,prob.contam.between){
   
