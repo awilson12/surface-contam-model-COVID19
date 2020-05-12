@@ -425,7 +425,7 @@ behavior.sim(caretype="Rounds",numsequence=500,prob.patient.infect=prob.patient.
 Rounds<-exposure.frame
       
 #Observational care scenario
-behavior.sim(caretype="Rounds",numsequence=500,prob.patient.infect=prob.patient.infect,
+behavior.sim(caretype="Obs",numsequence=500,prob.patient.infect=prob.patient.infect,
              numvisit=numvisit,prob.contam.between=prob.contam.between)
 Obs<-exposure.frame
       
