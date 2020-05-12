@@ -373,7 +373,8 @@ behavior.sim(caretype="IV",numsequence=500,prob.patient.infect=.25,numvisit = 4,
   #test <- as.data.frame(exposure.frame[[1]]); write.csv(exposure.frame[[1]], file="TEST.csv")
   
   #saving list of data frames from all simulations
-  saveRDS(exposure.frame, file="exposure.frame.rds")
+  saveRDS(exposure.frame, sprintf("sim.name%s.exposure.frame.rds"))
+  
   
   #reset directory to parent folder so we can go to correct subfolder within parent folder for next sim run
   setwd(this.dir)
