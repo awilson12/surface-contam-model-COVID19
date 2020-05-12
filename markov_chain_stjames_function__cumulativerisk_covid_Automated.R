@@ -430,9 +430,9 @@ behavior.sim(caretype="Rounds",numsequence=500,prob.patient.infect=prob.patient.
 Obs<-exposure.frame
       
 #save output
-saveRDS(IV, sprintf("sim.name%s.IV.exposure.frame.rds"))
-saveRDS(Rounds, sprintf("sim.name%s.Rounds.exposure.frame.rds"))
-saveRDS(Obs, sprintf("sim.name%s.Obs.exposure.frame.rds"))
+saveRDS(IV, file=sprintf("%s.IV.exposure.frame.rds",sim.name))
+saveRDS(Rounds, file=sprintf("%s.IV.exposure.frame.rds",sim.name))
+saveRDS(Obs, file=sprintf("%s.IV.exposure.frame.rds",sim.name))
 
   #reset directory to parent folder so we can go to correct subfolder within parent folder for next sim run
   setwd(this.dir)
