@@ -54,6 +54,8 @@ for(j in 1:NUM.SIM)
   if(sim.name=="DGHPNS"){if(dir.exists("DGHPNS")==FALSE){dir.create("DGHPNS"); setwd("DGHPNS")}else{setwd("DGHPNS")}}
   if(sim.name=="DGHPS"){if(dir.exists("DGHPS")==FALSE){dir.create("DGHPS"); setwd("DGHPS")}else{setwd("DGHPS")}}
   
+  if(sim.name=="control"){if(dir.exists("control")==FALSE){dir.create("control"); setwd("control")}else{setwd("control")}}
+  
   
 # MASTER FUNCTION ----
 behavior.sim<-function(caretype=c("IV","Obs","Rounds"),numsequence,prob.patient.infect,numvisit,prob.contam.between){
@@ -381,16 +383,57 @@ behavior.sim<-function(caretype=c("IV","Obs","Rounds"),numsequence,prob.patient.
   
 } # Master function end
 
-#------------------------------------------ IV care---------------------------------------------------------------------
 
-behavior.sim(caretype="IV",numsequence=500,prob.patient.infect=.25,numvisit = 4,prob.contam.between = 1)
+#dawn poor, dawn ok, dawn good
+probcontam<-c(0.8,0.5,0.1)
 
-  #test <- as.data.frame(exposure.frame[[1]]); write.csv(exposure.frame[[1]], file="TEST.csv")
-  
-  #saving list of data frames from all simulations
-  saveRDS(exposure.frame, sprintf("sim.name%s.exposure.frame.rds"))
-  
-  
+#low patient load, high patient load
+patload<-c(15,30)
+
+#non-surge, high surge
+contam<-c(0.05,0.5)
+
+if (j<5){
+  prob.contam.between=probcontam[1]
+}else if (j>4 & j<9){
+  prob.contam.between=probcontam[2]
+}else{
+  prob.contam.between=probcontam[3]
+}
+
+if(j %% 2 ==0){
+  prob.patient.infect=contam[1]
+}else{
+  prob.patient.infect=contam[2]
+}
+
+if (sim.name=="DPLPNS" | sim.name=="DPLPS" | sim.name=="DOLPNS" | sim.name=="DOLPS"|
+    sim.name=="DGLPNS" | sim.name=="DGLPS"){
+  numvisit=patload[1]
+}else{
+  numvisit=patload[2]
+}
+
+#IV scenario
+behavior.sim(caretype="IV",numsequence=500,prob.patient.infect=prob.patient.infect,
+             numvisit=numvisit,prob.contam.between=prob.contam.between)
+IV<-exposure.frame
+      
+#Rounds scenario
+behavior.sim(caretype="Rounds",numsequence=500,prob.patient.infect=prob.patient.infect,
+             numvisit=numvisit,prob.contam.between=prob.contam.between)
+Rounds<-exposure.frame
+      
+#Observational care scenario
+behavior.sim(caretype="Rounds",numsequence=500,prob.patient.infect=prob.patient.infect,
+             numvisit=numvisit,prob.contam.between=prob.contam.between)
+Obs<-exposure.frame
+      
+#save output
+saveRDS(IV, sprintf("sim.name%s.IV.exposure.frame.rds"))
+saveRDS(Rounds, sprintf("sim.name%s.Rounds.exposure.frame.rds"))
+saveRDS(Obs, sprintf("sim.name%s.Obs.exposure.frame.rds"))
+
   #reset directory to parent folder so we can go to correct subfolder within parent folder for next sim run
   setwd(this.dir)
   
