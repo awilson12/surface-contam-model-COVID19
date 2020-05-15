@@ -445,13 +445,16 @@ saveRDS(Rounds, file=sprintf("%s.Rounds.exposure.frame.rds",sim.name))
 saveRDS(Obs, file=sprintf("%s.Obs.exposure.frame.rds",sim.name))
 
   if (j==1){
+    caretype<-c(rep("IV",500),rep("Rounds",500),rep("Observations",500))
     risk=c(IV.risk,Rounds.risk,Obs.risk)
     prob.contam.between.all=rep(prob.contam.between,length(risk))
     prob.patient.infect.all=rep(prob.patient.infect,length(risk))
     numvisit.all=rep(numvisit,length(risk))
   }else{
+    caretypetemp<-c(rep("IV",500),rep("Rounds",500),rep("Observations",500))
     risktemp=c(IV.risk,Rounds.risk,Obs.risk)
     risk<-c(risk,risktemp)
+    caretype<-c(caretype,caretypetemp)
     prob.contam.between.temp=rep(prob.contam.between,length(risktemp))
     prob.patient.infect.temp=rep(prob.patient.infect,length(risktemp))
     numvisit.temp=rep(numvisit,length(risktemp))
@@ -468,8 +471,9 @@ saveRDS(Obs, file=sprintf("%s.Obs.exposure.frame.rds",sim.name))
 
 frameall<-data.frame(risk=risk,probcontambetween=as.character(prob.contam.between.all),
                      probpatientinfect=as.character(prob.patient.infect.all),
-                     numvisit=as.character(numvisit.all))
+                     numvisit=as.character(numvisit.all),caretype=caretype)
 
+#violin plots
 A<-ggplot(frameall)+geom_violin(aes(x=probcontambetween,
                                   fill=numvisit,y=risk),draw_quantiles = c(0.25,0.5,0.75))+
   scale_y_continuous(trans="log10",name="Infection Risk")+
@@ -488,14 +492,15 @@ windows()
 ggarrange(A,B)
 
 
-A<-ggplot(frameall)+geom_boxplot(aes(x=probcontambetween,
+#boxplots, if that's your preferred flavor
+C<-ggplot(frameall)+geom_boxplot(aes(x=probcontambetween,
                                     fill=numvisit,y=risk))+
   scale_y_continuous(trans="log10",name="Infection Risk")+
   scale_x_discrete(name="Probability of Contamination Between Care Episodes")+
   scale_fill_discrete(name="Number of Patient Visits")+
   theme_pubr()
 
-B<-ggplot(frameall)+geom_boxplot(aes(x=probcontambetween,
+D<-ggplot(frameall)+geom_boxplot(aes(x=probcontambetween,
                                     fill=probpatientinfect,y=risk))+
   scale_y_continuous(trans="log10",name="Infection Risk")+
   scale_x_discrete(name="Probability of Contamination Between Care Episodes")+
@@ -503,7 +508,33 @@ B<-ggplot(frameall)+geom_boxplot(aes(x=probcontambetween,
   theme_pubr()
 
 windows()
-ggarrange(A,B)
+ggarrange(C,D)
+
+
+#by care types
+
+
+#violin plots
+E<-ggplot(frameall)+geom_boxplot(aes(x=probcontambetween,
+                                    fill=caretype,y=risk))+
+  scale_y_continuous(trans="log10",name="Infection Risk")+
+  scale_x_discrete(name="Probability of Contamination Between Care Episodes")+
+  scale_fill_discrete(name="Number of Patient Visits")+
+  facet_wrap(~numvisit)+
+  theme_pubr()
+
+G<-ggplot(frameall)+geom_boxplot(aes(x=probcontambetween,
+                                    fill=caretype,y=risk))+
+  scale_y_continuous(trans="log10",name="Infection Risk")+
+  scale_x_discrete(name="Probability of Contamination Between Care Episodes")+
+  scale_fill_discrete(name="Probability of COVID-19 Patient")+
+  facet_wrap(~probpatientinfect)+
+  theme_pubr()
+
+windows()
+ggarrange(E,G)
+
+#----------exploring other parameters and their relationship to infection risk
 
 
 
