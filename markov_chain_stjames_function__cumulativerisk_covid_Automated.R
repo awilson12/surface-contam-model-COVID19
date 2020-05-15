@@ -63,8 +63,10 @@ behavior.sim<-function(caretype=c("IV","Obs","Rounds"),numsequence,prob.patient.
   #numvisit is function of shift length and number of patients, # of care episodes
   
    set.seed(34)
-   #require(truncdist)
+  #require(truncdist)
   
+  #initializing vector to save final infection risk per simulation
+  finalinfectionrisk<-rep(NA,numsequence)
 
   #Remove "S" at end of entries and convert from character to numeric format
   durations$Duration<-as.numeric(gsub("S","",durations$Duration))
@@ -366,19 +368,21 @@ behavior.sim<-function(caretype=c("IV","Obs","Rounds"),numsequence,prob.patient.
         durationall<-c(durationall,duration)
       }
       
+      
     }
-    
   
     # -------------------------------- SAVE OUTPUT FOR SIMULATION FOR SINGLE PERSON ----------------------------------------------------------------------------------
     exposure.frame.temp<-data.frame(dose=doseall,infect=infectall,patientnum=patientnum,handR=handRall,handL=handLall,hand=handall,behavior=behaviorall,duration=durationall,SH=SHall,lambda=lambdaall,beta=betaall,surfconc=surfconcall,k.sall=k.sall,k.hall=k.hall)
     behavior.total[[j]]<-behavior
     exposure.frame[[j]]<-exposure.frame.temp
+    finalinfectionrisk[j]<-max(infectall)
 
     rm(behavior)
   }
   # --------------------------------- SAVE ALL OUTPUTS TO GLOBAL ENV --------------------------------------------------------------------------------------------------
   behavior.total<<-behavior.total
   exposure.frame<<-exposure.frame
+  finalinfectionrisk<<-finalinfectionrisk
   
   
 } # Master function end
@@ -418,23 +422,88 @@ if (sim.name=="DPLPNS" | sim.name=="DPLPS" | sim.name=="DOLPNS" | sim.name=="DOL
 behavior.sim(caretype="IV",numsequence=500,prob.patient.infect=prob.patient.infect,
              numvisit=numvisit,prob.contam.between=prob.contam.between)
 IV<-exposure.frame
+write.csv(finalinfectionrisk,file=sprintf("%s.IV.risks.cvs",sim.name))
+IV.risk<-finalinfectionrisk
       
 #Rounds scenario
 behavior.sim(caretype="Rounds",numsequence=500,prob.patient.infect=prob.patient.infect,
              numvisit=numvisit,prob.contam.between=prob.contam.between)
 Rounds<-exposure.frame
+write.csv(finalinfectionrisk,file=sprintf("%s.Rounds.risks.cvs",sim.name))
+Rounds.risk<-finalinfectionrisk
       
 #Observational care scenario
 behavior.sim(caretype="Obs",numsequence=500,prob.patient.infect=prob.patient.infect,
              numvisit=numvisit,prob.contam.between=prob.contam.between)
 Obs<-exposure.frame
+Obs.risk<-finalinfectionrisk
+write.csv(finalinfectionrisk,file=sprintf("%s.Obs.risks.cvs",sim.name))
       
 #save output
 saveRDS(IV, file=sprintf("%s.IV.exposure.frame.rds",sim.name))
 saveRDS(Rounds, file=sprintf("%s.Rounds.exposure.frame.rds",sim.name))
 saveRDS(Obs, file=sprintf("%s.Obs.exposure.frame.rds",sim.name))
 
+  if (j==1){
+    risk=c(IV.risk,Rounds.risk,Obs.risk)
+    prob.contam.between.all=rep(prob.contam.between,length(risk))
+    prob.patient.infect.all=rep(prob.patient.infect,length(risk))
+    numvisit.all=rep(numvisit,length(risk))
+  }else{
+    risktemp=c(IV.risk,Rounds.risk,Obs.risk)
+    risk<-c(risk,risktemp)
+    prob.contam.between.temp=rep(prob.contam.between,length(risktemp))
+    prob.patient.infect.temp=rep(prob.patient.infect,length(risktemp))
+    numvisit.temp=rep(numvisit,length(risktemp))
+    
+    prob.contam.between.all<-c(prob.contam.between.all,prob.contam.between.temp)
+    prob.patient.infect.all<-c(prob.patient.infect.all,prob.patient.infect.temp)
+    numvisit.all<-c(numvisit.all,numvisit.temp)
+  }
+
   #reset directory to parent folder so we can go to correct subfolder within parent folder for next sim run
   setwd(this.dir)
   
-  } # Automation loop end
+} # Automation loop end
+
+frameall<-data.frame(risk=risk,probcontambetween=as.character(prob.contam.between.all),
+                     probpatientinfect=as.character(prob.patient.infect.all),
+                     numvisit=as.character(numvisit.all))
+
+A<-ggplot(frameall)+geom_violin(aes(x=probcontambetween,
+                                  fill=numvisit,y=risk),draw_quantiles = c(0.25,0.5,0.75))+
+  scale_y_continuous(trans="log10",name="Infection Risk")+
+  scale_x_discrete(name="Probability of Contamination Between Care Episodes")+
+  scale_fill_discrete(name="Number of Patient Visits")+
+  theme_pubr()
+
+B<-ggplot(frameall)+geom_violin(aes(x=probcontambetween,
+                                     fill=probpatientinfect,y=risk),draw_quantiles = c(0.25,0.5,0.75))+
+  scale_y_continuous(trans="log10",name="Infection Risk")+
+  scale_x_discrete(name="Probability of Contamination Between Care Episodes")+
+  scale_fill_discrete(name="Probability of COVID-19 Patient")+
+  theme_pubr()
+
+windows()
+ggarrange(A,B)
+
+
+A<-ggplot(frameall)+geom_boxplot(aes(x=probcontambetween,
+                                    fill=numvisit,y=risk))+
+  scale_y_continuous(trans="log10",name="Infection Risk")+
+  scale_x_discrete(name="Probability of Contamination Between Care Episodes")+
+  scale_fill_discrete(name="Number of Patient Visits")+
+  theme_pubr()
+
+B<-ggplot(frameall)+geom_boxplot(aes(x=probcontambetween,
+                                    fill=probpatientinfect,y=risk))+
+  scale_y_continuous(trans="log10",name="Infection Risk")+
+  scale_x_discrete(name="Probability of Contamination Between Care Episodes")+
+  scale_fill_discrete(name="Probability of COVID-19 Patient")+
+  theme_pubr()
+
+windows()
+ggarrange(A,B)
+
+
+
