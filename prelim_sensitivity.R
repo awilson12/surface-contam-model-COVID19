@@ -93,4 +93,18 @@ for(j in 1:NUM.SIM){
   #reset directory to parent folder so we can go to correct subfolder within parent folder for next sim run
   setwd(this.dir)
 }
+
+require(reshape2)
+
+framecor = subset(frame, select = -c(care,scenario) )
+
+cormat<-round(cor(framecor,method=c("spearman")),2)
+melted_cormat<-melt(cormat)
+ggplot(data=melted_cormat,aes(x=Var1,y=Var2,fill=value))+geom_tile()
+
+
+
+
+
+ggplot(frame)+geom_point(aes(x=lambda,y=infect,colour=scenario))
   
