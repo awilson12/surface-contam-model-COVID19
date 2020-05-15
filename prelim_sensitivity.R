@@ -100,7 +100,9 @@ framecor = subset(frame, select = -c(care,scenario) )
 
 cormat<-round(cor(framecor,method=c("spearman")),2)
 melted_cormat<-melt(cormat)
-ggplot(data=melted_cormat,aes(x=Var1,y=Var2,fill=value))+geom_tile()
+ggplot(data=melted_cormat,aes(x=Var1,y=Var2,fill=value))+geom_tile()+
+  geom_text(aes(label = round(value, 1))) +
+  scale_fill_gradient(low = "white", high = "blue") 
 
 
 
