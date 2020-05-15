@@ -534,7 +534,5 @@ G<-ggplot(frameall)+geom_boxplot(aes(x=probcontambetween,
 windows()
 ggarrange(E,G)
 
-#----------exploring other parameters and their relationship to infection risk
-
 
 
