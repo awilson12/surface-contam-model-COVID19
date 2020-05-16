@@ -174,4 +174,26 @@ H<-ggplot(frame)+geom_point(aes(x=duration,y=infect,colour=scenario))+
 windows()
 ggarrange(A,B,C,D,E,G,H,common.legend = TRUE)
 
+
+
+A<-ggplot(frame)+geom_point(aes(x=lambda,y=infect,colour=care))+
+  scale_y_continuous(trans="log10")+theme_pubr()
+B<-ggplot(frame)+geom_point(aes(x=beta,y=infect,colour=care))+
+  scale_y_continuous(trans="log10")+theme_pubr()
+C<-ggplot(frame)+geom_point(aes(x=surfconc,y=infect,colour=care))+
+  scale_y_continuous(trans="log10")+scale_x_continuous(trans="log10")+theme_pubr()
+D<-ggplot(frame)+geom_point(aes(x=k.sall,y=infect,colour=care))+
+  scale_y_continuous(trans="log10")+theme_pubr()
+E<-ggplot(frame)+geom_point(aes(x=k.hall,y=infect,colour=care))+
+  scale_y_continuous(trans="log10")+theme_pubr()
+G<-ggplot(frame)+geom_point(aes(x=SH,y=infect,colour=care))+
+  scale_y_continuous(trans="log10")+theme_pubr()
+H<-ggplot(frame)+geom_point(aes(x=duration,y=infect,colour=care))+
+  scale_y_continuous(trans="log10")+theme_pubr()
+
+windows()
+ggarrange(A,B,C,D,E,G,H,common.legend = TRUE)
+
+
+
   
