@@ -111,6 +111,40 @@ setwd(this.dir)
 
 write.csv(frame,'frame_sensitivity.csv')
 
+#--------------working on tile plots to investigate relationships between------------------------------------------
+#---------------input parameters that result in highest infection risks--------------------------------------------------------
+A<-ggplot(frame)+geom_tile(aes(x=round(lambda,3),y=round(beta,3),fill=log10(infect)))+
+  scale_x_continuous(name="Hand-to-Surface Transfer Efficiency")+
+  scale_y_continuous(name="Surface-to-Hand Transfer Efficiency")+
+  scale_fill_continuous(name=expression("log"[10]*phantom(x)*"Infection Risk"))+
+  theme_pubr()
+
+B<-ggplot(frame)+geom_tile(aes(x=round(lambda,3),y=round(SH,3),fill=log10(infect)))+
+  scale_x_continuous(name="Hand-to-Surface Transfer Efficiency")+
+  scale_y_continuous(name="Fraction of Hand Contact Area")+
+  scale_fill_continuous(name=expression("log"[10]*phantom(x)*"Infection Risk"))+
+  theme_pubr()
+
+C<-ggplot(frame)+geom_tile(aes(x=round(lambda,2),y=round(log10(surfconc),1),fill=log10(infect)))+
+  scale_x_continuous(name="Hand-to-Surface Transfer Efficiency")+
+  scale_y_continuous(name=expression("log"[10]*phantom(x)*"Surface Concentration"))+
+  scale_fill_continuous(name=expression("log"[10]*phantom(x)*"Infection Risk"))+
+  theme_pubr()
+
+D<-ggplot(frame)+geom_tile(aes(x=round(SH,2),y=round(log10(surfconc),1),fill=log10(infect)))+
+  scale_x_continuous(name="Fraction of Hand Contact Area")+
+  scale_y_continuous(name=expression("log"[10]*phantom(x)*"Surface Concentration"))+
+  scale_fill_continuous(name=expression("log"[10]*phantom(x)*"Infection Risk"))+
+  theme_pubr()
+
+E<-ggplot(frame)+geom_tile(aes(x=round(SH,3),y=round(beta,3),fill=log10(infect)))+
+  scale_x_continuous(name="Fraction of Hand Contact Area")+
+  scale_y_continuous(name=expression("log"[10]*phantom(x)*"Surface-to-Hand Transfer Efficiency"))+
+  scale_fill_continuous(name=expression("log"[10]*phantom(x)*"Infection Risk"))+
+  theme_pubr()
+
+windows()
+ggarrange(A,B,D,C,E,common.legend = TRUE)
 
 A<-ggplot(frame)+geom_point(aes(x=lambda,y=infect,colour=scenario))+
   scale_y_continuous(trans="log10")+theme_pubr()
@@ -129,4 +163,5 @@ H<-ggplot(frame)+geom_point(aes(x=duration,y=infect,colour=scenario))+
 
 windows()
 ggarrange(A,B,C,D,E,G,H,common.legend = TRUE)
+
   
