@@ -55,6 +55,7 @@ for(j in 1:NUM.SIM){
       k.hall<-c(mean(IVframe$k.hall),mean(Roundsframe$k.hall),mean(Obsframe$k.hall))
       infect<-c(max(IVframe$infect),max(Roundsframe$infect),max(Obsframe$infect))
       care<-c("IV","Rounds","Obs")
+      
     }else{
       lambdatemp<-c(mean(IVframe$lambda),mean(Roundsframe$lambda),mean(Obsframe$lambda))
       betatemp<-c(mean(IVframe$beta),mean(Roundsframe$beta),mean(Obsframe$beta))
@@ -77,17 +78,20 @@ for(j in 1:NUM.SIM){
       care<-c(care,caretemp)
     }
     
-    if (j==1){
-      scenario<-rep(sprintf("%s",sim.name),length(lambda))
-      frame<-data.frame(lambda=lambda,beta=beta,duration=duration,SH=SH,surfconc=surfconc,k.sall=k.sall,k.hall=k.hall,
-                        infect=infect,care=care,scenario=scenario)
-    }else{
-      scenariotemp<-rep(sprintf("%s",sim.name),length(lambda))
-      frametemp<-data.frame(lambda=lambda,beta=beta,duration=duration,SH=SH,surfconc=surfconc,k.sall=k.sall,k.hall=k.hall,
-                        infect=infect,care=care,scenario=scenariotemp)
-      frame<-rbind(frame,frametemp)
-    }
  
+  }
+  
+  if (j==1){
+    scenario<-rep(sprintf("%s",sim.name),length(lambda))
+    frame<-data.frame(lambda=lambda,beta=beta,duration=duration,SH=SH,surfconc=surfconc,k.sall=k.sall,k.hall=k.hall,
+                      infect=infect,care=care,scenario=scenario)
+  }else{
+    scenariotemp<-rep(sprintf("%s",sim.name),length(lambda))
+    frametemp<-data.frame(lambda=lambda,beta=beta,duration=duration,SH=SH,surfconc=surfconc,k.sall=k.sall,k.hall=k.hall,
+                          infect=infect,care=care,scenario=scenariotemp)
+    frame<-rbind(frame,frametemp)
+    print(length(frame$lambda)/(j*1500))
+          print(j)
   }
   
   #reset directory to parent folder so we can go to correct subfolder within parent folder for next sim run
@@ -125,26 +129,32 @@ B<-ggplot(frame)+geom_tile(aes(x=round(lambda,3),y=round(SH,3),fill=log10(infect
   scale_fill_continuous(name=expression("log"[10]*phantom(x)*"Infection Risk"))+
   theme_pubr()
 
-C<-ggplot(frame)+geom_tile(aes(x=round(lambda,2),y=round(log10(surfconc),1),fill=log10(infect)))+
+C<-ggplot(frame)+geom_tile(aes(x=round(lambda,3),y=round(log10(surfconc),1),fill=log10(infect)))+
   scale_x_continuous(name="Hand-to-Surface Transfer Efficiency")+
   scale_y_continuous(name=expression("log"[10]*phantom(x)*"Surface Concentration"))+
   scale_fill_continuous(name=expression("log"[10]*phantom(x)*"Infection Risk"))+
   theme_pubr()
 
-D<-ggplot(frame)+geom_tile(aes(x=round(SH,2),y=round(log10(surfconc),1),fill=log10(infect)))+
+D<-ggplot(frame)+geom_tile(aes(x=round(beta,3),y=round(log10(surfconc),1),fill=log10(infect)))+
+  scale_x_continuous(name="Surface-to-Hand Transfer Efficiency")+
+  scale_y_continuous(name=expression("log"[10]*phantom(x)*"Surface Concentration"))+
+  scale_fill_continuous(name=expression("log"[10]*phantom(x)*"Infection Risk"))+
+  theme_pubr()
+
+E<-ggplot(frame)+geom_tile(aes(x=round(SH,3),y=round(log10(surfconc),1),fill=log10(infect)))+
   scale_x_continuous(name="Fraction of Hand Contact Area")+
   scale_y_continuous(name=expression("log"[10]*phantom(x)*"Surface Concentration"))+
   scale_fill_continuous(name=expression("log"[10]*phantom(x)*"Infection Risk"))+
   theme_pubr()
 
-E<-ggplot(frame)+geom_tile(aes(x=round(SH,3),y=round(beta,3),fill=log10(infect)))+
+G<-ggplot(frame)+geom_tile(aes(x=round(SH,3),y=round(beta,3),fill=log10(infect)))+
   scale_x_continuous(name="Fraction of Hand Contact Area")+
-  scale_y_continuous(name=expression("log"[10]*phantom(x)*"Surface-to-Hand Transfer Efficiency"))+
+  scale_y_continuous(name="Surface-to-Hand Transfer Efficiency")+
   scale_fill_continuous(name=expression("log"[10]*phantom(x)*"Infection Risk"))+
   theme_pubr()
 
 windows()
-ggarrange(A,B,D,C,E,common.legend = TRUE)
+ggarrange(A,B,D,C,E,G,common.legend = TRUE)
 
 A<-ggplot(frame)+geom_point(aes(x=lambda,y=infect,colour=scenario))+
   scale_y_continuous(trans="log10")+theme_pubr()
