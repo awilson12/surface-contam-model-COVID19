@@ -49,7 +49,7 @@ for(j in 1:NUM.SIM){
       lambda<-c(mean(IVframe$lambda),mean(Roundsframe$lambda),mean(Obsframe$lambda))
       beta<-c(mean(IVframe$beta),mean(Roundsframe$beta),mean(Obsframe$beta))
       duration<-c(mean(IVframe$duration),mean(Roundsframe$duration),mean(Obsframe$duration))
-      SH<-c(mean(IVframe$duration),mean(Roundsframe$SH),mean(Obsframe$SH))
+      SH<-c(mean(IVframe$SH),mean(Roundsframe$SH),mean(Obsframe$SH))
       surfconc<-c(mean(IVframe$surfconc),mean(Roundsframe$surfconc),mean(Obsframe$surfconc))
       k.sall<-c(mean(IVframe$k.sall),mean(Roundsframe$k.sall),mean(Obsframe$k.sall))
       k.hall<-c(mean(IVframe$k.hall),mean(Roundsframe$k.hall),mean(Obsframe$k.hall))
@@ -59,7 +59,7 @@ for(j in 1:NUM.SIM){
       lambdatemp<-c(mean(IVframe$lambda),mean(Roundsframe$lambda),mean(Obsframe$lambda))
       betatemp<-c(mean(IVframe$beta),mean(Roundsframe$beta),mean(Obsframe$beta))
       durationtemp<-c(mean(IVframe$duration),mean(Roundsframe$duration),mean(Obsframe$duration))
-      SHtemp<-c(mean(IVframe$duration),mean(Roundsframe$SH),mean(Obsframe$SH))
+      SHtemp<-c(mean(IVframe$SH),mean(Roundsframe$SH),mean(Obsframe$SH))
       surfconctemp<-c(mean(IVframe$surfconc),mean(Roundsframe$surfconc),mean(Obsframe$surfconc))
       k.salltemp<-c(mean(IVframe$k.sall),mean(Roundsframe$k.sall),mean(Obsframe$k.sall))
       k.halltemp<-c(mean(IVframe$k.hall),mean(Roundsframe$k.hall),mean(Obsframe$k.hall))
@@ -95,6 +95,8 @@ for(j in 1:NUM.SIM){
 }
 
 require(reshape2)
+require(ggplot2)
+require(ggpubr)
 
 framecor = subset(frame, select = -c(care,scenario) )
 
@@ -105,8 +107,26 @@ ggplot(data=melted_cormat,aes(x=Var1,y=Var2,fill=value))+geom_tile()+
   scale_fill_gradient(low = "white", high = "blue") 
 
 
+setwd(this.dir)
+
+write.csv(frame,'frame_sensitivity.csv')
 
 
+A<-ggplot(frame)+geom_point(aes(x=lambda,y=infect,colour=scenario))+
+  scale_y_continuous(trans="log10")+theme_pubr()
+B<-ggplot(frame)+geom_point(aes(x=beta,y=infect,colour=scenario))+
+  scale_y_continuous(trans="log10")+theme_pubr()
+C<-ggplot(frame)+geom_point(aes(x=surfconc,y=infect,colour=scenario))+
+  scale_y_continuous(trans="log10")+theme_pubr()
+D<-ggplot(frame)+geom_point(aes(x=k.sall,y=infect,colour=scenario))+
+  scale_y_continuous(trans="log10")+theme_pubr()
+E<-ggplot(frame)+geom_point(aes(x=k.hall,y=infect,colour=scenario))+
+  scale_y_continuous(trans="log10")+theme_pubr()
+G<-ggplot(frame)+geom_point(aes(x=SH,y=infect,colour=scenario))+
+  scale_y_continuous(trans="log10")+theme_pubr()
+H<-ggplot(frame)+geom_point(aes(x=duration,y=infect,colour=scenario))+
+  scale_y_continuous(trans="log10")+theme_pubr()
 
-ggplot(frame)+geom_point(aes(x=lambda,y=infect,colour=scenario))
+windows()
+ggarrange(A,B,C,D,E,G,H,common.legend = TRUE)
   
