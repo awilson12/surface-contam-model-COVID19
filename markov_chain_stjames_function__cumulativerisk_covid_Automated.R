@@ -210,7 +210,7 @@ behavior.sim<-function(caretype=c("IV","Obs","Rounds"),numsequence,prob.patient.
       #placeholder for now in case we want to adjust duration
       duration<-sample(durations$Duration,length(behavior),replace=TRUE)
       
-      if (m==1){
+      
         if(hand[1]=="right"){
           handR[1]<-beta[1]*SH[1]*(surfconc[1]*exp(-k.s[1]*duration[1]))
           handL[1]<-0  
@@ -218,11 +218,7 @@ behavior.sim<-function(caretype=c("IV","Obs","Rounds"),numsequence,prob.patient.
           handL[1]<-beta[1]*SH[1]*(surfconc[1]*exp(-k.s[1]*duration[1]))
           handR[1]<-0 
         }
-      }else{
-        handR[1]<-handRnext
-        handL[1]<-handLnext
-      }
-      
+
       for (a in 2:(length(behavior))){
         
         if(hand[a]=="right"){
@@ -247,9 +243,13 @@ behavior.sim<-function(caretype=c("IV","Obs","Rounds"),numsequence,prob.patient.
       # require('gsl')
         
         #final concentration on hands a episode of care
-        handRnext<- handR[a]
-        handLnext<- handL[a]
-        
+      
+        if (m==1){
+          #if this is the first episode of care, handRbefore and handLbefore at this point are zero
+          handRbefore<-0
+          handLbefore<-0
+        }
+
         #inactivation concentration on hands
         khtemp<- k.h[a]
         
@@ -261,20 +261,20 @@ behavior.sim<-function(caretype=c("IV","Obs","Rounds"),numsequence,prob.patient.
         
         if(randomnum<=prob.contam.between){
           
-          handRnext<-handRnext*(3*10^-7) #assume % of viral titer in study represents transfer potential when doffing
-          handLnext<-handLnext*(3*10^-7) #assume % of viral titer in study represents transfer potential when doffing
+          handRbefore<-(handR[a]*(3*10^-7))+handRbefore   #assume % of viral titer in study represents transfer potential when doffing
+          handLbefore<-(handL[a]*(3*10^-7))+handLbefore   #assume % of viral titer in study represents transfer potential when doffing
           
           #ethanol hand rub (described by Kampf et al. 2020 as recommended step after doffing)
           washnum<-runif(1,0,1)
           
           if (washnum<=.5){
             #then they wash their hands
-            handRnext<-handRnext*(1/10^rtrunc(1,spec="norm",a=0,b=6,mean=1.62,sd=0.12)) #based on dist from Marco
-            handLnext<-handLnext*(1/10^rtrunc(1,spec="norm",a=0,b=6,mean=1.62,sd=0.12)) #based on dist from Marco
+            handRbefore<-handRbefore*(1/10^rtrunc(1,spec="norm",a=0,b=6,mean=1.62,sd=0.12)) #based on dist from Marco
+            handLbefore<-handLbefore*(1/10^rtrunc(1,spec="norm",a=0,b=6,mean=1.62,sd=0.12)) #based on dist from Marco
           }else{
             #otherwise they use hand sanitizer
-            handRnext<-handRnext*(1/10^runif(1,2,4)) #based on Kampf et al. (2020)
-            handLnext<-handLnext*(1/10^runif(1,2,4)) #based on Kampf et al. (2020)
+            handRbefore<-handRbefore*(1/10^runif(1,2,4)) #based on Kampf et al. (2020)
+            handLbefore<-handLbefore*(1/10^runif(1,2,4)) #based on Kampf et al. (2020)
           }
           
           #Determines which hand will be used for the hand-to-face contact
@@ -292,20 +292,20 @@ behavior.sim<-function(caretype=c("IV","Obs","Rounds"),numsequence,prob.patient.
           if (m==1){
             #if this is the first episode of care, this is our first dose
             if (whichhand<=.5){
-              dose<-handLnext*TEtemp*SMtemp*AHtemp*exp(-khtemp) #assuming duration of 1 second
-              handLnext<-(1-TEtemp*SMtemp)*handLnext*exp(-khtemp)
+              dose<-handLbefore*TEtemp*SMtemp*AHtemp*exp(-khtemp) #assuming duration of 1 second
+              handLbefore<-(1-TEtemp*SMtemp)*handLbefore*exp(-khtemp)
             }else{
-              dose<-handRnext*TEtemp*SMtemp*AHtemp*exp(-khtemp) #assuming duration of 1 second
-              handRnext<-(1-TEtemp*SMtemp)*handRnext*exp(-khtemp)
+              dose<-handRbefore*TEtemp*SMtemp*AHtemp*exp(-khtemp) #assuming duration of 1 second
+              handRbefore<-(1-TEtemp*SMtemp)*handRbefore*exp(-khtemp)
             }
           }else{
             #otherwise, we're adding onto our cumulative dose
             if (whichhand<=.5){
-              dose<-dose+handLnext*TEtemp*SMtemp*AHtemp*exp(-khtemp) #assuming duration of 1 second
-              handLnext<-(1-TEtemp*SMtemp)*handLnext*exp(-khtemp)
+              dose<-dose+handLbefore*TEtemp*SMtemp*AHtemp*exp(-khtemp) #assuming duration of 1 second
+              handLbefore<-(1-TEtemp*SMtemp)*handLbefore*exp(-khtemp)
             }else{
-              dose<-dose+handRnext*TEtemp*SMtemp*AHtemp*exp(-khtemp) #assuming duration of 1 second
-              handRnext<-(1-TEtemp*SMtemp)*handRnext*exp(-khtemp)
+              dose<-dose+handRbefore*TEtemp*SMtemp*AHtemp*exp(-khtemp) #assuming duration of 1 second
+              handRbefore<-(1-TEtemp*SMtemp)*handRbefore*exp(-khtemp)
             }
           }
          
@@ -321,8 +321,8 @@ behavior.sim<-function(caretype=c("IV","Obs","Rounds"),numsequence,prob.patient.
             #otherwise, it's equal to the previous dose (no change in cumulative dose)
             dose<-dose
           }
-          handRnext<-0 #no contamination for next care episode
-          handLnext<-0 #no contamination for next care episode
+          handRbefore<-0 #no contamination for next care episode
+          handLbefore<-0 #no contamination for next care episode
           
         }
         pair<-sample(c(1:length(exactbp$ln.alpha.)),1)
@@ -337,6 +337,8 @@ behavior.sim<-function(caretype=c("IV","Obs","Rounds"),numsequence,prob.patient.
       
       #saving concentrations for all rooms
       if (m==1){
+        handRnoglove<-rep(handRbefore,length(behavior))
+        handLnoglove<-rep(handLbefore,length(behavior))
         doseall<-doserep
         infectall<-infectrep
         handRall<-handR
@@ -352,6 +354,11 @@ behavior.sim<-function(caretype=c("IV","Obs","Rounds"),numsequence,prob.patient.
         k.hall<-k.h
         durationall<-duration
       }else{
+        handRnoglovetemp<-rep(handRbefore,length(behavior))
+        handLnoglovetemp<-rep(handLbefore,length(behavior))
+        
+        handRnoglove<-c(handRnoglove,handRnoglovetemp)
+        handLnoglove<-c(handLnoglove,handLnoglovetemp)
         doseall<-c(doseall,doserep)
         infectall<-c(infectall,infectrep)
         handRall<-c(handRall,handR)
@@ -372,7 +379,7 @@ behavior.sim<-function(caretype=c("IV","Obs","Rounds"),numsequence,prob.patient.
     }
   
     # -------------------------------- SAVE OUTPUT FOR SIMULATION FOR SINGLE PERSON ----------------------------------------------------------------------------------
-    exposure.frame.temp<-data.frame(dose=doseall,infect=infectall,patientnum=patientnum,handR=handRall,handL=handLall,hand=handall,behavior=behaviorall,duration=durationall,SH=SHall,lambda=lambdaall,beta=betaall,surfconc=surfconcall,k.sall=k.sall,k.hall=k.hall)
+    exposure.frame.temp<-data.frame(dose=doseall,infect=infectall,patientnum=patientnum,handR=handRall,handL=handLall,hand=handall,handRnoglove=handRnoglove,handLnoglove=handLnoglove,behavior=behaviorall,duration=durationall,SH=SHall,lambda=lambdaall,beta=betaall,surfconc=surfconcall,k.sall=k.sall,k.hall=k.hall)
     behavior.total[[j]]<-behavior
     exposure.frame[[j]]<-exposure.frame.temp
     finalinfectionrisk[j]<-max(infectall)
@@ -472,6 +479,9 @@ saveRDS(Obs, file=sprintf("%s.Obs.exposure.frame.rds",sim.name))
 frameall<-data.frame(risk=risk,probcontambetween=as.character(prob.contam.between.all),
                      probpatientinfect=as.character(prob.patient.infect.all),
                      numvisit=as.character(numvisit.all),caretype=caretype)
+
+require(ggplot2)
+require(ggpubr)
 
 #violin plots
 A<-ggplot(frameall)+geom_violin(aes(x=probcontambetween,
