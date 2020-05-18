@@ -321,8 +321,8 @@ behavior.sim<-function(caretype=c("IV","Obs","Rounds"),numsequence,prob.patient.
             #otherwise, it's equal to the previous dose (no change in cumulative dose)
             dose<-dose
           }
-          handRbefore<-0 #no contamination for next care episode
-          handLbefore<-0 #no contamination for next care episode
+          handRbefore<-handRbefore #no contamination for next care episode
+          handLbefore<-handLbefore #no contamination for next care episode
           
         }
         pair<-sample(c(1:length(exactbp$ln.alpha.)),1)
