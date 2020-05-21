@@ -281,7 +281,7 @@ behavior.sim<-function(caretype=c("IV","Obs","Rounds"),numsequence,prob.patient.
           whichhand<-runif(1,0,1)
           
           #transfer efficiency to mouth
-          TEtemp<-.3390 #Rusin et al. (2002)
+          TEtemp<-rtrunc(1,spec="norm",a=0,b=1,mean=.3390,sd=0.15) #mean: Rusin et al. (2002); sd: Lopez et al. (2012)
           
           #fraction of hand used in mouth contact
           SMtemp<-runif(1,0.04/5, 0.06/5) #single fingertip surface area fraction = front partial fingers fractional surface area / 5
