@@ -7,6 +7,7 @@ setwd(this.dir)
 
 if("truncdist" %in% rownames(installed.packages())==FALSE){install.packages("truncdist"); require(truncdist)}else{require(truncdist)}
 if("gsl" %in% rownames(installed.packages())==FALSE){install.packages("gsl"); require(gsl)}else{require(gsl)}
+if("triangle" %in% rownames(installed.packages())==FALSE){install.packages("triangle"); require(triangle)}else{require(triangle)}
 
 # IMPORT DATA NEEDED FOR ALL OPERATIONS DURING AUTOMATION -----
 
@@ -152,17 +153,17 @@ behavior.sim<-function(caretype=c("IV","Obs","Rounds"),numsequence,prob.patient.
          #concentrations assuming patient is infected and asymptomatic
         
         #Assume Out conc ~ In conc
-        surfconc[behavior!="patient"]<-10^runif(length(surfconc[behavior!="patient"]),0,3) #place holder conc
+        surfconc[behavior!="patient"]<-rtriangle(length(surfconc[behavior!="patient"]),a=3.3*10^3,b=6.6*10^4,c=2.8E4)
         
         #Patient surfaces
-        surfconc[behavior=="Patient"]<-10^runif(length(surfconc[behavior=="Patient"]),3,6) #place holder conc
+        surfconc[behavior=="Patient"]<-3.3*10^3 #point value, mask concentration Table 1 Guo et al. (2020)
           
       }else{
         
         #concentrations assuming patient is not infected
         
         #Assume Out conc ~ In conc
-        surfconc[behavior!="patient"]<-10^runif(length(surfconc[behavior!="patient"]),-2,0)
+        surfconc[behavior!="patient"]<-rep(0,length(surfconc[behavior!="Patient"]))
                  
         #Patient surfaces
         surfconc[behavior=="Patient"]<-rep(0,length(surfconc[behavior=="Patient"]))
