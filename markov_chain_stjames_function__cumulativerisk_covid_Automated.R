@@ -153,7 +153,8 @@ behavior.sim<-function(caretype=c("IV","Obs","Rounds"),numsequence,prob.patient.
          #concentrations assuming patient is infected and asymptomatic
         
         #Assume Out conc ~ In conc
-        surfconc[behavior!="patient"]<-rtriangle(length(surfconc[behavior!="patient"]),a=3.3*10^3,b=6.6*10^4,c=2.8E4)
+        #min, max, and median of concentrations from Table 1 (up until pharmacy values) Guo et al. (2020)
+        surfconc[behavior!="patient"]<-rtriangle(length(surfconc[behavior!="patient"]),a=3.3E3,b=6.6E4,c=2.8E4)
         
         #Patient surfaces
         surfconc[behavior=="Patient"]<-3.3*10^3 #point value, mask concentration Table 1 Guo et al. (2020)
