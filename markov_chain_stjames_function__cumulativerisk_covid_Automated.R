@@ -149,15 +149,19 @@ behavior.sim<-function(caretype=c("IV","Obs","Rounds"),numsequence,prob.patient.
       #concentrations for hand-to-surface contact moments
       numtest<-runif(1,0,1)
       if (numtest<=prob.patient.infect){
+        
+        #surface areas of swabbing (these are not provided by Guo et al., 2020, so we're estimating)
+        
+        surfacearea<-rtriangle(length(surfconc[behavior!="Patient"]),5,195,100) #cm^2
        
-         #concentrations assuming patient is infected and asymptomatic
+        #concentrations assuming patient is infected and asymptomatic
         
         #Assume Out conc ~ In conc
         #min, max, and median of concentrations from Table 1 (up until pharmacy values) Guo et al. (2020)
-        surfconc[behavior!="Patient"]<-rtriangle(length(surfconc[behavior!="Patient"]),a=3.3E3,b=6.6E4,c=2.8E4)
+        surfconc[behavior!="Patient"]<-rtriangle(length(surfconc[behavior!="Patient"]),a=3.3E3,b=6.6E4,c=2.8E4)/surfacearea
         
         #Patient surfaces
-        surfconc[behavior=="Patient"]<-3.3*10^3 #point value, mask concentration Table 1 Guo et al. (2020)
+        surfconc[behavior=="Patient"]<-3.3*10^3/sample(surfacearea,1) #point value, mask concentration Table 1 Guo et al. (2020)
           
       }else{
         
