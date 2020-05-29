@@ -154,7 +154,7 @@ behavior.sim<-function(caretype=c("IV","Obs","Rounds"),numsequence,prob.patient.
         
         #Assume Out conc ~ In conc
         #min, max, and median of concentrations from Table 1 (up until pharmacy values) Guo et al. (2020)
-        surfconc[behavior!="patient"]<-rtriangle(length(surfconc[behavior!="patient"]),a=3.3E3,b=6.6E4,c=2.8E4)
+        surfconc[behavior!="Patient"]<-rtriangle(length(surfconc[behavior!="Patient"]),a=3.3E3,b=6.6E4,c=2.8E4)
         
         #Patient surfaces
         surfconc[behavior=="Patient"]<-3.3*10^3 #point value, mask concentration Table 1 Guo et al. (2020)
@@ -164,7 +164,7 @@ behavior.sim<-function(caretype=c("IV","Obs","Rounds"),numsequence,prob.patient.
         #concentrations assuming patient is not infected
         
         #Assume Out conc ~ In conc
-        surfconc[behavior!="patient"]<-rep(0,length(surfconc[behavior!="Patient"]))
+        surfconc[behavior!="Patient"]<-rep(0,length(surfconc[behavior!="Patient"]))
                  
         #Patient surfaces
         surfconc[behavior=="Patient"]<-rep(0,length(surfconc[behavior=="Patient"]))
@@ -401,7 +401,7 @@ behavior.sim<-function(caretype=c("IV","Obs","Rounds"),numsequence,prob.patient.
 probcontam<-c(0.8,0.5,0.1)
 
 #low patient load, high patient load
-patload<-c(15,30)
+patload<-c(7,14) #7 based on estimates from Ian; consider double that for high load situations
 
 #non-surge, high surge
 contam<-c(0.05,0.5)
