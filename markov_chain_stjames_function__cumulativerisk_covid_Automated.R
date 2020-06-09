@@ -526,12 +526,12 @@ ggarrange(A,B)
 
 
 #boxplots, if that's your preferred flavor
-C<-ggplot(frameall)+geom_boxplot(aes(x=probcontambetween,
+C<-ggplot(frameall[frameall$numvisit!=1,])+geom_boxplot(aes(x=probcontambetween,
                                     fill=numvisit,y=risk))+
   scale_y_continuous(trans="log10",name="Infection Risk")+
   scale_x_discrete(name="Probability of Contamination Between Care Episodes")+
   scale_fill_discrete(name="Number of Patient Visits")+
-  theme_pubr()+facet_wrap(~probpatientinfect,scales="free")
+  theme_pubr()+facet_grid(numvisit~probpatientinfect,scales="free")+theme_bw()
 
 D<-ggplot(frameall)+geom_boxplot(aes(x=probcontambetween,
                                     fill=probpatientinfect,y=risk))+
