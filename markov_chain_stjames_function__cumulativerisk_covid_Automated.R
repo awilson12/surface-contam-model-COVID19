@@ -30,9 +30,9 @@ suppressMessages(source("adjust_behaviors_covid.R"))
 #NS=non-surge (low # patient visits); S=surge (high # patient visits)
 #control=1 patient visit, 100% prob of COVID-19 patient
 
-SIM <- c("DPLPNS", "DPLPS","DPHPNS","DPHPS", "DPallS", "DPallNS",
-         "DOLPNS","DOLPS","DOHPNS","DOHPS", "DOallS", "DOallNS",
-         "DGLPNS","DGLPS","DGHPNS","DGHPS", "DGallS", "DGallNS",
+SIM <- c("DPLPNS", "DPLPS","DPHPNS","DPHPS", "DPallNS", "DPallS",
+         "DOLPNS","DOLPS","DOHPNS","DOHPS", "DOallNS", "DOallS",
+         "DGLPNS","DGLPS","DGHPNS","DGHPS", "DGallNS", "DGallS",
          "control")   
 
 NUM.SIM <- length(SIM)     # Count the number of iterations for the automated simulations
@@ -412,12 +412,12 @@ behavior.sim<-function(caretype=c("IV","Obs","Rounds"),numsequence,prob.patient.
 probcontam<-c(0.8,0.5,0.1)
 
 #low patient load, high patient load
-patload<-c(7,14) #7 based on estimates from Ian; consider double that for high load situations
+patload<-c(14,7) #7 based on estimates from Ian; consider double that for high load situations
 
 #non-surge, high surge, or all COVID ward (probability of 1 for any given patient being COVID-19 positive)
 contam<-c(0.05,0.5,1)
 
-if (j<7){
+if (j<7 | j==19){
   prob.contam.between=probcontam[1]
 }else if (j>6 & j<13){
   prob.contam.between=probcontam[2]
@@ -425,20 +425,27 @@ if (j<7){
   prob.contam.between=probcontam[3]
 }
 
-#------------------------------------------------------this section needs to be updated
+#------------------------------------------------------this section needs to be checked
 
-if(j %% 2 ==0){
+if(j==1 | j==2 | j==7 | j==8 | j==13 | j==14){
   prob.patient.infect=contam[1]
-}else{
+}else if (j==3 | j==4 | j==9 | j==10 | j==15 | j==16){
   prob.patient.infect=contam[2]
+}else{
+  prob.patient.infect=contam[3]
 }
 
-if (sim.name=="DPLPNS" | sim.name=="DPallNS" | sim.name=="DOLPNS" | sim.name=="DOLPS"|
-    sim.name=="DGLPNS" | sim.name=="DGLPS"){
+if (j %% 2 ==0 & j!=19){
   numvisit=patload[1]
-}else{
+}else if (j!=19){
   numvisit=patload[2]
+}else{
+  numvisit=1
 }
+
+#so "control" scenario is probcontam (0.8), 1 probability of COVID watch patient,
+#single patient visit
+
 #-------------------------------------------------------
 
 #IV scenario
