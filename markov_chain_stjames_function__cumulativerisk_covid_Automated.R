@@ -30,9 +30,10 @@ suppressMessages(source("adjust_behaviors_covid.R"))
 #NS=non-surge (low # patient visits); S=surge (high # patient visits)
 #control=1 patient visit, 100% prob of COVID-19 patient
 
-SIM <- c("DPLPNS", "DPLPS","DPHPNS","DPHPS",
-         "DOLPNS","DOLPS","DOHPNS","DOHPS",
-         "DGLPNS","DGLPS","DGHPNS","DGHPS","control")   
+SIM <- c("DPLPNS", "DPLPS","DPHPNS","DPHPS", "DPallS", "DPallNS",
+         "DOLPNS","DOLPS","DOHPNS","DOHPS", "DOallS", "DOallNS",
+         "DGLPNS","DGLPS","DGHPNS","DGHPS", "DGallS", "DGallNS",
+         "control")   
 
 NUM.SIM <- length(SIM)     # Count the number of iterations for the automated simulations
 
@@ -44,16 +45,22 @@ for(j in 1:NUM.SIM)
   if(sim.name=="DPLPS"){if(dir.exists("DPLPS")==FALSE){dir.create("DPLPS"); setwd("DPLPS")}else{setwd("DPLPS")}}
   if(sim.name=="DPHPNS"){if(dir.exists("DPHPNS")==FALSE){dir.create("DPHPNS"); setwd("DPHPNS")}else{setwd("DPHPNS")}}
   if(sim.name=="DPHPS"){if(dir.exists("DPHPS")==FALSE){dir.create("DPHPS"); setwd("DPHPS")}else{setwd("DPHPS")}}
+  if(sim.name=="DPallNS"){if(dir.exists("DPallNS")==FALSE){dir.create("DPallNS"); setwd("DPallNS")}else{setwd("DPallNS")}}
+  if(sim.name=="DPallS"){if(dir.exists("DPallS")==FALSE){dir.create("DPallS"); setwd("DPallS")}else{setwd("DPallS")}}
 
   if(sim.name=="DOLPNS"){if(dir.exists("DOLPNS")==FALSE){dir.create("DOLPNS"); setwd("DOLPNS")}else{setwd("DOLPNS")}}
   if(sim.name=="DOLPS"){if(dir.exists("DOLPS")==FALSE){dir.create("DOLPS"); setwd("DOLPS")}else{setwd("DOLPS")}}
   if(sim.name=="DOHPNS"){if(dir.exists("DOHPNS")==FALSE){dir.create("DOHPNS"); setwd("DOHPNS")}else{setwd("DOHPNS")}}
   if(sim.name=="DOHPS"){if(dir.exists("DOHPS")==FALSE){dir.create("DOHPS"); setwd("DOHPS")}else{setwd("DOHPS")}}
+  if(sim.name=="DOallNS"){if(dir.exists("DOallNS")==FALSE){dir.create("DOallNS"); setwd("DOallNS")}else{setwd("DOallNS")}}
+  if(sim.name=="DOallS"){if(dir.exists("DOallS")==FALSE){dir.create("DOallS"); setwd("DOallS")}else{setwd("DOallS")}}
   
   if(sim.name=="DGLPNS"){if(dir.exists("DGLPNS")==FALSE){dir.create("DGLPNS"); setwd("DGLPNS")}else{setwd("DGLPNS")}}
   if(sim.name=="DGLPS"){if(dir.exists("DGLPS")==FALSE){dir.create("DGLPS"); setwd("DGLPS")}else{setwd("DGLPS")}}
   if(sim.name=="DGHPNS"){if(dir.exists("DGHPNS")==FALSE){dir.create("DGHPNS"); setwd("DGHPNS")}else{setwd("DGHPNS")}}
   if(sim.name=="DGHPS"){if(dir.exists("DGHPS")==FALSE){dir.create("DGHPS"); setwd("DGHPS")}else{setwd("DGHPS")}}
+  if(sim.name=="DGallNS"){if(dir.exists("DGallNS")==FALSE){dir.create("DGallNS"); setwd("DGallNS")}else{setwd("DGallNS")}}
+  if(sim.name=="DGallS"){if(dir.exists("DGallS")==FALSE){dir.create("DGallS"); setwd("DGallS")}else{setwd("DGallS")}}
   
   if(sim.name=="control"){if(dir.exists("control")==FALSE){dir.create("control"); setwd("control")}else{setwd("control")}}
   
@@ -407,16 +414,18 @@ probcontam<-c(0.8,0.5,0.1)
 #low patient load, high patient load
 patload<-c(7,14) #7 based on estimates from Ian; consider double that for high load situations
 
-#non-surge, high surge
-contam<-c(0.05,0.5)
+#non-surge, high surge, or all COVID ward (probability of 1 for any given patient being COVID-19 positive)
+contam<-c(0.05,0.5,1)
 
-if (j<5){
+if (j<7){
   prob.contam.between=probcontam[1]
-}else if (j>4 & j<9){
+}else if (j>6 & j<13){
   prob.contam.between=probcontam[2]
 }else{
   prob.contam.between=probcontam[3]
 }
+
+#------------------------------------------------------this section needs to be updated
 
 if(j %% 2 ==0){
   prob.patient.infect=contam[1]
@@ -424,12 +433,13 @@ if(j %% 2 ==0){
   prob.patient.infect=contam[2]
 }
 
-if (sim.name=="DPLPNS" | sim.name=="DPLPS" | sim.name=="DOLPNS" | sim.name=="DOLPS"|
+if (sim.name=="DPLPNS" | sim.name=="DPallNS" | sim.name=="DOLPNS" | sim.name=="DOLPS"|
     sim.name=="DGLPNS" | sim.name=="DGLPS"){
   numvisit=patload[1]
 }else{
   numvisit=patload[2]
 }
+#-------------------------------------------------------
 
 #IV scenario
 behavior.sim(caretype="IV",numsequence=500,prob.patient.infect=prob.patient.infect,
@@ -514,17 +524,20 @@ C<-ggplot(frameall)+geom_boxplot(aes(x=probcontambetween,
   scale_y_continuous(trans="log10",name="Infection Risk")+
   scale_x_discrete(name="Probability of Contamination Between Care Episodes")+
   scale_fill_discrete(name="Number of Patient Visits")+
-  theme_pubr()
+  theme_pubr()+facet_wrap(~probpatientinfect,scales="free")
 
 D<-ggplot(frameall)+geom_boxplot(aes(x=probcontambetween,
                                     fill=probpatientinfect,y=risk))+
   scale_y_continuous(trans="log10",name="Infection Risk")+
   scale_x_discrete(name="Probability of Contamination Between Care Episodes")+
   scale_fill_discrete(name="Probability of COVID-19 Patient")+
-  theme_pubr()
+  theme_pubr()+facet_wrap(~probpatientinfect,scales="free")
 
 windows()
 ggarrange(C,D)
+
+windows()
+C
 
 
 #by care types
@@ -544,7 +557,7 @@ G<-ggplot(frameall)+geom_boxplot(aes(x=probcontambetween,
   scale_y_continuous(trans="log10",name="Infection Risk")+
   scale_x_discrete(name="Probability of Contamination Between Care Episodes")+
   scale_fill_discrete(name="Probability of COVID-19 Patient")+
-  facet_wrap(~probpatientinfect)+
+  facet_wrap(~probpatientinfect,scales="free")+
   theme_pubr()
 
 windows()
