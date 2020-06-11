@@ -73,8 +73,9 @@ behavior.sim<-function(caretype=c("IV","Obs","Rounds"),numsequence,prob.patient.
   set.seed(34)
   #require(truncdist)
   
-  #initializing vector to save final infection risk per simulation
+  #initializing vector to save final infection risk and dose per simulation
   finalinfectionrisk<-rep(NA,numsequence)
+  finaldose<-rep(NA,numsequence)
 
   #Remove "S" at end of entries and convert from character to numeric format
   durations$Duration<-as.numeric(gsub("S","",durations$Duration))
@@ -408,6 +409,7 @@ behavior.sim<-function(caretype=c("IV","Obs","Rounds"),numsequence,prob.patient.
     behavior.total[[j]]<-behavior
     exposure.frame[[j]]<-exposure.frame.temp
     finalinfectionrisk[j]<-max(infectall)
+    finaldose[j]<-max(doseall)
 
     rm(behavior)
   }
@@ -415,6 +417,7 @@ behavior.sim<-function(caretype=c("IV","Obs","Rounds"),numsequence,prob.patient.
   behavior.total<<-behavior.total
   exposure.frame<<-exposure.frame
   finalinfectionrisk<<-finalinfectionrisk
+  finaldose<<-finaldose
   
   
 } # Master function end
@@ -466,6 +469,7 @@ behavior.sim(caretype="IV",numsequence=SIM.iter,prob.patient.infect=prob.patient
 IV<-exposure.frame
 write.csv(finalinfectionrisk,file=sprintf("%s.IV.risks.cvs",sim.name))
 IV.risk<-finalinfectionrisk
+IV.dose<-finaldose
       
 #Rounds scenario
 behavior.sim(caretype="Rounds",numsequence=SIM.iter,prob.patient.infect=prob.patient.infect,
@@ -473,12 +477,14 @@ behavior.sim(caretype="Rounds",numsequence=SIM.iter,prob.patient.infect=prob.pat
 Rounds<-exposure.frame
 write.csv(finalinfectionrisk,file=sprintf("%s.Rounds.risks.cvs",sim.name))
 Rounds.risk<-finalinfectionrisk
+Rounds.dose<-finaldose
       
 #Observational care scenario
 behavior.sim(caretype="Obs",numsequence=SIM.iter,prob.patient.infect=prob.patient.infect,
              numvisit=numvisit,prob.contam.between=prob.contam.between)
 Obs<-exposure.frame
 Obs.risk<-finalinfectionrisk
+Obs.dose<-finaldose
 write.csv(finalinfectionrisk,file=sprintf("%s.Obs.risks.cvs",sim.name))
       
 #save output
@@ -489,12 +495,15 @@ saveRDS(Obs, file=sprintf("%s.Obs.exposure.frame.rds",sim.name))
   if (j==1){
     caretype<-c(rep("IV",SIM.iter),rep("Rounds",SIM.iter),rep("Observations",SIM.iter))
     risk=c(IV.risk,Rounds.risk,Obs.risk)
+    dose=c(IV.dose,Rounds.dose,Obs.dose)
     prob.contam.between.all=rep(prob.contam.between,length(risk))
     prob.patient.infect.all=rep(prob.patient.infect,length(risk))
     numvisit.all=rep(numvisit,length(risk))
   }else{
     caretypetemp<-c(rep("IV",SIM.iter),rep("Rounds",SIM.iter),rep("Observations",SIM.iter))
     risktemp=c(IV.risk,Rounds.risk,Obs.risk)
+    dosetemp=c(IV.dose,Rounds.dose,Obs.dose)
+    dose<-c(dose,dosetemp)
     risk<-c(risk,risktemp)
     caretype<-c(caretype,caretypetemp)
     prob.contam.between.temp=rep(prob.contam.between,length(risktemp))
@@ -513,7 +522,7 @@ saveRDS(Obs, file=sprintf("%s.Obs.exposure.frame.rds",sim.name))
 
 frameall<-data.frame(risk=risk,probcontambetween=as.character(prob.contam.between.all),
                      probpatientinfect=as.character(prob.patient.infect.all),
-                     numvisit=as.character(numvisit.all),caretype=caretype)
+                     numvisit=as.character(numvisit.all),caretype=caretype,dose=dose)
 
 require(ggplot2)
 require(ggpubr)
@@ -551,6 +560,18 @@ summary.stats<-function(probcontambetween,numvisit,probpatientinfect){
   
 }
 
+summary.stats(probcontambetween=0.1,numvisit=7,probpatientinfect=0.05)
+summary.stats(probcontambetween=0.1,numvisit=7,probpatientinfect=0.5)
+summary.stats(probcontambetween=0.1,numvisit=7,probpatientinfect=1)
+
+summary.stats(probcontambetween=0.5,numvisit=7,probpatientinfect=0.05)
+summary.stats(probcontambetween=0.5,numvisit=7,probpatientinfect=0.5)
+summary.stats(probcontambetween=0.5,numvisit=7,probpatientinfect=1)
+
+summary.stats(probcontambetween=0.8,numvisit=7,probpatientinfect=0.05)
+summary.stats(probcontambetween=0.8,numvisit=7,probpatientinfect=0.5)
+summary.stats(probcontambetween=0.8,numvisit=7,probpatientinfect=1)
+
 
 summary.stats(probcontambetween=0.1,numvisit=14,probpatientinfect=0.05)
 summary.stats(probcontambetween=0.1,numvisit=14,probpatientinfect=0.5)
@@ -563,6 +584,54 @@ summary.stats(probcontambetween=0.5,numvisit=14,probpatientinfect=1)
 summary.stats(probcontambetween=0.8,numvisit=14,probpatientinfect=0.05)
 summary.stats(probcontambetween=0.8,numvisit=14,probpatientinfect=0.5)
 summary.stats(probcontambetween=0.8,numvisit=14,probpatientinfect=1)
+
+
+#---------------- dose summary stats
+
+
+summary.stats.dose<-function(probcontambetween,numvisit,probpatientinfect){
+  
+  print(signif(summary(frameall$dose[frameall$probcontambetween==probcontambetween & 
+                                       frameall$numvisit==numvisit &
+                                       frameall$probpatientinfect==probpatientinfect]),2))
+  print(signif(min(frameall$dose[frameall$probcontambetween==probcontambetween & 
+                                   frameall$numvisit==numvisit &
+                                   frameall$probpatientinfect==probpatientinfect]),2))
+  
+  
+  
+  
+  print(signif(sd(frameall$dose[frameall$probcontambetween==probcontambetween & 
+                                  frameall$numvisit==numvisit &
+                                  frameall$probpatientinfect==probpatientinfect]),2))
+  
+}
+
+summary.stats.dose(probcontambetween=0.1,numvisit=7,probpatientinfect=0.05)
+summary.stats.dose(probcontambetween=0.1,numvisit=7,probpatientinfect=0.5)
+summary.stats.dose(probcontambetween=0.1,numvisit=7,probpatientinfect=1)
+
+summary.stats.dose(probcontambetween=0.5,numvisit=7,probpatientinfect=0.05)
+summary.stats.dose(probcontambetween=0.5,numvisit=7,probpatientinfect=0.5)
+summary.stats.dose(probcontambetween=0.5,numvisit=7,probpatientinfect=1)
+
+summary.stats.dose(probcontambetween=0.8,numvisit=7,probpatientinfect=0.05)
+summary.stats.dose(probcontambetween=0.8,numvisit=7,probpatientinfect=0.5)
+summary.stats.dose(probcontambetween=0.8,numvisit=7,probpatientinfect=1)
+
+
+summary.stats.dose(probcontambetween=0.1,numvisit=14,probpatientinfect=0.05)
+summary.stats.dose(probcontambetween=0.1,numvisit=14,probpatientinfect=0.5)
+summary.stats.dose(probcontambetween=0.1,numvisit=14,probpatientinfect=1)
+
+summary.stats.dose(probcontambetween=0.5,numvisit=14,probpatientinfect=0.05)
+summary.stats.dose(probcontambetween=0.5,numvisit=14,probpatientinfect=0.5)
+summary.stats.dose(probcontambetween=0.5,numvisit=14,probpatientinfect=1)
+
+summary.stats.dose(probcontambetween=0.8,numvisit=14,probpatientinfect=0.05)
+summary.stats.dose(probcontambetween=0.8,numvisit=14,probpatientinfect=0.5)
+summary.stats.dose(probcontambetween=0.8,numvisit=14,probpatientinfect=1)
+
 
 
 
