@@ -560,6 +560,9 @@ summary.stats<-function(probcontambetween,numvisit,probpatientinfect){
   
 }
 
+summary.stats(probcontambetween=0.8,numvisit=1,probpatientinfect=1)
+
+
 summary.stats(probcontambetween=0.1,numvisit=7,probpatientinfect=0.05)
 summary.stats(probcontambetween=0.1,numvisit=7,probpatientinfect=0.5)
 summary.stats(probcontambetween=0.1,numvisit=7,probpatientinfect=1)
@@ -606,6 +609,9 @@ summary.stats.dose<-function(probcontambetween,numvisit,probpatientinfect){
                                   frameall$probpatientinfect==probpatientinfect]),2))
   
 }
+
+
+summary.stats.dose(probcontambetween=0.8,numvisit=1,probpatientinfect=1)
 
 summary.stats.dose(probcontambetween=0.1,numvisit=7,probpatientinfect=0.05)
 summary.stats.dose(probcontambetween=0.1,numvisit=7,probpatientinfect=0.5)
