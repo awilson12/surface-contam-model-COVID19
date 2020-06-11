@@ -18,7 +18,7 @@ if("triangle" %in% rownames(installed.packages())==FALSE){install.packages("tria
 
 # CONSTANTS TO BE USED 
 
-SIM.iter <- 100     # Making a master Monte Carlo iteration value
+SIM.iter <- 10000     # Making a master Monte Carlo iteration value
 suppressMessages(source("adjust_behaviors_covid.R"))
 
 
@@ -70,7 +70,7 @@ behavior.sim<-function(caretype=c("IV","Obs","Rounds"),numsequence,prob.patient.
   
   #numvisit is function of shift length and number of patients, # of care episodes
   
-   set.seed(34)
+  set.seed(34)
   #require(truncdist)
   
   #initializing vector to save final infection risk per simulation
@@ -155,6 +155,10 @@ behavior.sim<-function(caretype=c("IV","Obs","Rounds"),numsequence,prob.patient.
       
       #concentrations for hand-to-surface contact moments
       numtest<-runif(1,0,1)
+      
+      RNAinfectious<-rep(NA,length(behavior))
+      
+      
       if (numtest<=prob.patient.infect){
         
         #surface areas of swabbing (these are not provided by Guo et al., 2020, so we're estimating)
@@ -163,12 +167,16 @@ behavior.sim<-function(caretype=c("IV","Obs","Rounds"),numsequence,prob.patient.
        
         #concentrations assuming patient is infected and asymptomatic
         
+        #initialize vector for saving RNAinfectious values
+        
         #Assume Out conc ~ In conc
         #min, max, and median of concentrations from Table 1 (up until pharmacy values) Guo et al. (2020)
-        surfconc[behavior!="Patient"]<-rtriangle(length(surfconc[behavior!="Patient"]),a=3.3E3,b=6.6E4,c=2.8E4)/surfacearea
+        RNAinfectious[behavior!="Patient"]<-runif(length(surfconc[behavior!="Patient"]),0.001,0.1)
+        surfconc[behavior!="Patient"]<-(rtriangle(length(surfconc[behavior!="Patient"]),a=3.3E3,b=6.6E4,c=2.8E4)/surfacearea)*RNAinfectious[behavior!="Patient"]
         
         #Patient surfaces
-        surfconc[behavior=="Patient"]<-3.3*10^3/sample(surfacearea,1) #point value, mask concentration Table 1 Guo et al. (2020)
+        RNAinfectious[behavior=="Patient"]<-runif(length(surfconc[behavior=="Patient"]),0.001,0.1)
+        surfconc[behavior=="Patient"]<-(3.3*10^3/sample(surfacearea,1))*RNAinfectious[behavior=="Patient"] #point value, mask concentration Table 1 Guo et al. (2020)
           
       }else{
         
@@ -352,6 +360,7 @@ behavior.sim<-function(caretype=c("IV","Obs","Rounds"),numsequence,prob.patient.
       if (m==1){
         handRnoglove<-rep(handRbefore,length(behavior))
         handLnoglove<-rep(handLbefore,length(behavior))
+        RNAinfectiousall<-RNAinfectious
         doseall<-doserep
         infectall<-infectrep
         handRall<-handR
@@ -367,6 +376,7 @@ behavior.sim<-function(caretype=c("IV","Obs","Rounds"),numsequence,prob.patient.
         k.hall<-k.h
         durationall<-duration
       }else{
+        RNAinfectiousall<-c(RNAinfectiousall,RNAinfectious)
         handRnoglovetemp<-rep(handRbefore,length(behavior))
         handLnoglovetemp<-rep(handLbefore,length(behavior))
         
@@ -392,7 +402,9 @@ behavior.sim<-function(caretype=c("IV","Obs","Rounds"),numsequence,prob.patient.
     }
   
     # -------------------------------- SAVE OUTPUT FOR SIMULATION FOR SINGLE PERSON ----------------------------------------------------------------------------------
-    exposure.frame.temp<-data.frame(dose=doseall,infect=infectall,patientnum=patientnum,handR=handRall,handL=handLall,hand=handall,handRnoglove=handRnoglove,handLnoglove=handLnoglove,behavior=behaviorall,duration=durationall,SH=SHall,lambda=lambdaall,beta=betaall,surfconc=surfconcall,k.sall=k.sall,k.hall=k.hall)
+    exposure.frame.temp<-data.frame(dose=doseall,infect=infectall,patientnum=patientnum,handR=handRall,handL=handLall,hand=handall,handRnoglove=handRnoglove,handLnoglove=handLnoglove,
+                                    behavior=behaviorall,duration=durationall,SH=SHall,lambda=lambdaall,beta=betaall,surfconc=surfconcall,k.sall=k.sall,k.hall=k.hall,
+                                    RNAinfectiousall=RNAinfectiousall)
     behavior.total[[j]]<-behavior
     exposure.frame[[j]]<-exposure.frame.temp
     finalinfectionrisk[j]<-max(infectall)
@@ -449,21 +461,21 @@ if (j %% 2 ==0 & j!=19){
 #-------------------------------------------------------
 
 #IV scenario
-behavior.sim(caretype="IV",numsequence=500,prob.patient.infect=prob.patient.infect,
+behavior.sim(caretype="IV",numsequence=SIM.iter,prob.patient.infect=prob.patient.infect,
              numvisit=numvisit,prob.contam.between=prob.contam.between)
 IV<-exposure.frame
 write.csv(finalinfectionrisk,file=sprintf("%s.IV.risks.cvs",sim.name))
 IV.risk<-finalinfectionrisk
       
 #Rounds scenario
-behavior.sim(caretype="Rounds",numsequence=500,prob.patient.infect=prob.patient.infect,
+behavior.sim(caretype="Rounds",numsequence=SIM.iter,prob.patient.infect=prob.patient.infect,
              numvisit=numvisit,prob.contam.between=prob.contam.between)
 Rounds<-exposure.frame
 write.csv(finalinfectionrisk,file=sprintf("%s.Rounds.risks.cvs",sim.name))
 Rounds.risk<-finalinfectionrisk
       
 #Observational care scenario
-behavior.sim(caretype="Obs",numsequence=500,prob.patient.infect=prob.patient.infect,
+behavior.sim(caretype="Obs",numsequence=SIM.iter,prob.patient.infect=prob.patient.infect,
              numvisit=numvisit,prob.contam.between=prob.contam.between)
 Obs<-exposure.frame
 Obs.risk<-finalinfectionrisk
@@ -475,13 +487,13 @@ saveRDS(Rounds, file=sprintf("%s.Rounds.exposure.frame.rds",sim.name))
 saveRDS(Obs, file=sprintf("%s.Obs.exposure.frame.rds",sim.name))
 
   if (j==1){
-    caretype<-c(rep("IV",500),rep("Rounds",500),rep("Observations",500))
+    caretype<-c(rep("IV",SIM.iter),rep("Rounds",SIM.iter),rep("Observations",SIM.iter))
     risk=c(IV.risk,Rounds.risk,Obs.risk)
     prob.contam.between.all=rep(prob.contam.between,length(risk))
     prob.patient.infect.all=rep(prob.patient.infect,length(risk))
     numvisit.all=rep(numvisit,length(risk))
   }else{
-    caretypetemp<-c(rep("IV",500),rep("Rounds",500),rep("Observations",500))
+    caretypetemp<-c(rep("IV",SIM.iter),rep("Rounds",SIM.iter),rep("Observations",SIM.iter))
     risktemp=c(IV.risk,Rounds.risk,Obs.risk)
     risk<-c(risk,risktemp)
     caretype<-c(caretype,caretypetemp)
@@ -506,69 +518,51 @@ frameall<-data.frame(risk=risk,probcontambetween=as.character(prob.contam.betwee
 require(ggplot2)
 require(ggpubr)
 
-#violin plots
-A<-ggplot(frameall)+geom_violin(aes(x=probcontambetween,
-                                  fill=numvisit,y=risk),draw_quantiles = c(0.25,0.5,0.75))+
-  scale_y_continuous(trans="log10",name="Infection Risk")+
-  scale_x_discrete(name="Probability of Contamination Between Care Episodes")+
-  scale_fill_discrete(name="Number of Patient Visits")+
-  theme_pubr()
 
-B<-ggplot(frameall)+geom_violin(aes(x=probcontambetween,
-                                     fill=probpatientinfect,y=risk),draw_quantiles = c(0.25,0.5,0.75))+
-  scale_y_continuous(trans="log10",name="Infection Risk")+
-  scale_x_discrete(name="Probability of Contamination Between Care Episodes")+
-  scale_fill_discrete(name="Probability of COVID-19 Patient")+
-  theme_pubr()
-
-windows()
-ggarrange(A,B)
-
-
-#boxplots, if that's your preferred flavor
-C<-ggplot(frameall[frameall$numvisit!=1,])+geom_boxplot(aes(x=probcontambetween,
+A<-ggplot(frameall[frameall$numvisit!=1,])+geom_boxplot(aes(x=probcontambetween,
                                     fill=numvisit,y=risk))+
   scale_y_continuous(trans="log10",name="Infection Risk")+
   scale_x_discrete(name="Probability of Contamination Between Care Episodes")+
   scale_fill_discrete(name="Number of Patient Visits")+
-  theme_pubr()+facet_grid(numvisit~probpatientinfect,scales="free")+theme_bw()
-
-D<-ggplot(frameall)+geom_boxplot(aes(x=probcontambetween,
-                                    fill=probpatientinfect,y=risk))+
-  scale_y_continuous(trans="log10",name="Infection Risk")+
-  scale_x_discrete(name="Probability of Contamination Between Care Episodes")+
-  scale_fill_discrete(name="Probability of COVID-19 Patient")+
-  theme_pubr()+facet_wrap(~probpatientinfect,scales="free")
-
-windows()
-ggarrange(C,D)
-
-windows()
-C
-
-
-#by care types
-
-
-#violin plots
-E<-ggplot(frameall)+geom_boxplot(aes(x=probcontambetween,
-                                    fill=caretype,y=risk))+
-  scale_y_continuous(trans="log10",name="Infection Risk")+
-  scale_x_discrete(name="Probability of Contamination Between Care Episodes")+
-  scale_fill_discrete(name="Number of Patient Visits")+
-  facet_wrap(~numvisit)+
-  theme_pubr()
-
-G<-ggplot(frameall)+geom_boxplot(aes(x=probcontambetween,
-                                    fill=caretype,y=risk))+
-  scale_y_continuous(trans="log10",name="Infection Risk")+
-  scale_x_discrete(name="Probability of Contamination Between Care Episodes")+
-  scale_fill_discrete(name="Probability of COVID-19 Patient")+
-  facet_wrap(~probpatientinfect,scales="free")+
+  facet_grid(numvisit~probpatientinfect,scales="free")+
   theme_pubr()
 
 windows()
-ggarrange(E,G)
+A
+
+
+#----------- summary statistics
+
+summary.stats<-function(probcontambetween,numvisit,probpatientinfect){
+  
+  print(signif(summary(frameall$risk[frameall$probcontambetween==probcontambetween & 
+                                 frameall$numvisit==numvisit &
+                                 frameall$probpatientinfect==probpatientinfect]),2))
+  print(signif(min(frameall$risk[frameall$probcontambetween==probcontambetween & 
+                                       frameall$numvisit==numvisit &
+                                       frameall$probpatientinfect==probpatientinfect]),2))
+  
+  
+  
+  
+  print(signif(sd(frameall$risk[frameall$probcontambetween==probcontambetween & 
+                            frameall$numvisit==numvisit &
+                            frameall$probpatientinfect==probpatientinfect]),2))
+  
+}
+
+
+summary.stats(probcontambetween=0.1,numvisit=14,probpatientinfect=0.05)
+summary.stats(probcontambetween=0.1,numvisit=14,probpatientinfect=0.5)
+summary.stats(probcontambetween=0.1,numvisit=14,probpatientinfect=1)
+
+summary.stats(probcontambetween=0.5,numvisit=14,probpatientinfect=0.05)
+summary.stats(probcontambetween=0.5,numvisit=14,probpatientinfect=0.5)
+summary.stats(probcontambetween=0.5,numvisit=14,probpatientinfect=1)
+
+summary.stats(probcontambetween=0.8,numvisit=14,probpatientinfect=0.05)
+summary.stats(probcontambetween=0.8,numvisit=14,probpatientinfect=0.5)
+summary.stats(probcontambetween=0.8,numvisit=14,probpatientinfect=1)
 
 
 
