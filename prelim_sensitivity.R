@@ -134,7 +134,8 @@ require(reshape2)
 require(ggplot2)
 require(ggpubr)
 
-framecor = subset(frame, select = -c(care,scenario) )
+frametemp<-frame[frame$infect>1e-15,]
+framecor = subset(frametemp, select = -c(care,scenario) )
 
 cormat<-round(cor(framecor,method=c("spearman")),2)
 melted_cormat<-melt(cormat)
@@ -142,14 +143,12 @@ ggplot(data=melted_cormat,aes(x=Var1,y=Var2,fill=value))+geom_tile()+
   geom_text(aes(label = signif(value, 2))) +
   scale_fill_gradient(low = "white", high = "blue") 
 
-cor(frame$infect,frame$beta.dose,method="spearman")
-cor(frame$infect,frame$alpha,method="spearman")
-cor(frame$infect[!is.na(frame$RNA)],frame$RNA[!is.na(frame$RNA)],method="spearman")
-cor(frame$infect[!is.na(frame$TEmouth)],frame$TEmouth[!is.na(frame$TEmouth)],method="spearman")
-cor(frame$infect[!is.na(frame$TEmouth) & frame$infect>1e-15],frame$TEmouth[!is.na(frame$TEmouth)&frame$infect>1e-15],method="spearman")
-
-cor(frame$infect[!is.na(frame$SM)],frame$SM[!is.na(frame$SM)],method="spearman")
-cor(frame$infect[!is.na(frame$Ah.dose)],frame$Ah.dose[!is.na(frame$Ah.dose)&frame],method="spearman")
+cor(frametemp$infect,frametemp$beta.dose,method="spearman")
+cor(frametemp$infect,frametemp$alpha,method="spearman")
+cor(frametemp$infect[!is.na(frametemp$RNA)],frametemp$RNA[!is.na(frametemp$RNA)],method="spearman")
+cor(frametemp$infect[!is.na(frametemp$TEmouth)],frametemp$TEmouth[!is.na(frametemp$TEmouth)],method="spearman")
+cor(frametemp$infect[!is.na(frametemp$SM)],frametemp$SM[!is.na(frametemp$SM)],method="spearman")
+cor(frametemp$infect[!is.na(frametemp$Ah.dose)],frametemp$Ah.dose[!is.na(frametemp$Ah.dose)],method="spearman")
 
 setwd(this.dir)
 
@@ -196,7 +195,7 @@ write.csv(frame,'frame_sensitivity.csv')
 windows()
 ggarrange(A,B,D,C,E,G,common.legend = TRUE)
 
-frametemp<-frame[frame$infect>1e-15,]
+
 
 A<-ggplot(frametemp[!is.na(frametemp$RNA),])+geom_point(aes(x=RNA,y=infect))+
   scale_y_continuous(trans="log10",name="Infection Risk")+theme_pubr()+
