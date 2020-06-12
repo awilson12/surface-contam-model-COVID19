@@ -279,6 +279,11 @@ behavior.sim<-function(caretype=c("IV","Obs","Rounds"),numsequence,prob.patient.
         
         #1/10 participants had <0.00003% of original inoculum transfered to hands during doffing
         
+        #saving these var if no contact made
+        TEtemp<-0
+        SMtemp<-0
+        AHtemp<-0
+        
         randomnum<-runif(1,0,1)
         
         if(randomnum<=prob.contam.between){
@@ -354,11 +359,22 @@ behavior.sim<-function(caretype=c("IV","Obs","Rounds"),numsequence,prob.patient.
          infecttemp<-1*10^-15 #cannot have zero infection risk, so replace with small risk
        }
       
+      SMsave<-rep(SMtemp,length(behavior))
+      AH.dose<-rep(AHtemp,length(behavior))
+      TE.temp<-rep(TEtemp,length(behavior))
+      
       doserep<-rep(dose,length(behavior))
       infectrep<-rep(infecttemp,length(behavior))
+      alpha<-rep(exactbp$alpha[pair],length(behavior))
+      beta.doseresp<-rep(exactbp$Beta[pair],length(behavior))
       
       #saving concentrations for all rooms
       if (m==1){
+        SMall<-SMsave
+        AH.doseall<-AH.dose
+        TE.tempall<-TE.temp
+        alphaall<-alpha
+        beta.dose.all<-beta.doseresp
         handRnoglove<-rep(handRbefore,length(behavior))
         handLnoglove<-rep(handLbefore,length(behavior))
         RNAinfectiousall<-RNAinfectious
@@ -377,6 +393,11 @@ behavior.sim<-function(caretype=c("IV","Obs","Rounds"),numsequence,prob.patient.
         k.hall<-k.h
         durationall<-duration
       }else{
+        SMall<-c(SMall,SMsave)
+        AH.doseall<-c(AH.doseall,AH.dose)
+        TE.tempall<-c(TE.tempall,TE.temp)
+        alphaall<-c(alphaall,alpha)
+        beta.dose.all<-c(beta.dose.all,beta.doseresp)
         RNAinfectiousall<-c(RNAinfectiousall,RNAinfectious)
         handRnoglovetemp<-rep(handRbefore,length(behavior))
         handLnoglovetemp<-rep(handLbefore,length(behavior))
@@ -405,7 +426,9 @@ behavior.sim<-function(caretype=c("IV","Obs","Rounds"),numsequence,prob.patient.
     # -------------------------------- SAVE OUTPUT FOR SIMULATION FOR SINGLE PERSON ----------------------------------------------------------------------------------
     exposure.frame.temp<-data.frame(dose=doseall,infect=infectall,patientnum=patientnum,handR=handRall,handL=handLall,hand=handall,handRnoglove=handRnoglove,handLnoglove=handLnoglove,
                                     behavior=behaviorall,duration=durationall,SH=SHall,lambda=lambdaall,beta=betaall,surfconc=surfconcall,k.sall=k.sall,k.hall=k.hall,
-                                    RNAinfectiousall=RNAinfectiousall)
+                                    RNAinfectiousall=RNAinfectiousall,alphaall=alphaall,beta.dose.all=beta.dose.all,SMall=SMall,
+                                    AH.doseall=AH.doseall,TE.tempall=TE.tempall)
+    
     behavior.total[[j]]<-behavior
     exposure.frame[[j]]<-exposure.frame.temp
     finalinfectionrisk[j]<-max(infectall)
