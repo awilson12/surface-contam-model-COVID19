@@ -144,11 +144,11 @@ ggplot(data=melted_cormat,aes(x=Var1,y=Var2,fill=value))+geom_tile()+
   scale_fill_gradient(low = "white", high = "blue") 
 
 cor(frametemp$infect,frametemp$beta.dose,method="spearman")
-cor(frametemp$infect,frametemp$alpha,method="spearman")
-cor(frametemp$infect[!is.na(frametemp$RNA)],frametemp$RNA[!is.na(frametemp$RNA)],method="spearman")
-cor(frametemp$infect[!is.na(frametemp$TEmouth)],frametemp$TEmouth[!is.na(frametemp$TEmouth)],method="spearman")
-cor(frametemp$infect[!is.na(frametemp$SM)],frametemp$SM[!is.na(frametemp$SM)],method="spearman")
-cor(frametemp$infect[!is.na(frametemp$Ah.dose)],frametemp$Ah.dose[!is.na(frametemp$Ah.dose)],method="spearman")
+#cor(frametemp$infect,frametemp$alpha,method="spearman")
+#cor(frametemp$infect[!is.na(frametemp$RNA)],frametemp$RNA[!is.na(frametemp$RNA)],method="spearman")
+#cor(frametemp$infect[!is.na(frametemp$TEmouth)],frametemp$TEmouth[!is.na(frametemp$TEmouth)],method="spearman")
+#cor(frametemp$infect[!is.na(frametemp$SM)],frametemp$SM[!is.na(frametemp$SM)],method="spearman")
+#cor(frametemp$infect[!is.na(frametemp$Ah.dose)],frametemp$Ah.dose[!is.na(frametemp$Ah.dose)],method="spearman")
 
 setwd(this.dir)
 
