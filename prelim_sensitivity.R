@@ -145,9 +145,11 @@ ggplot(data=melted_cormat,aes(x=Var1,y=Var2,fill=value))+geom_tile()+
 cor(frame$infect,frame$beta.dose,method="spearman")
 cor(frame$infect,frame$alpha,method="spearman")
 cor(frame$infect[!is.na(frame$RNA)],frame$RNA[!is.na(frame$RNA)],method="spearman")
+cor(frame$infect[!is.na(frame$TEmouth)],frame$TEmouth[!is.na(frame$TEmouth)],method="spearman")
+cor(frame$infect[!is.na(frame$TEmouth) & frame$infect>1e-15],frame$TEmouth[!is.na(frame$TEmouth)&frame$infect>1e-15],method="spearman")
+
 cor(frame$infect[!is.na(frame$SM)],frame$SM[!is.na(frame$SM)],method="spearman")
-cor(frame$infect[!is.na(frame$TEmouth)],frame$SM[!is.na(frame$TEmouth)],method="spearman")
-cor(frame$infect[!is.na(frame$Ah.dose)],frame$SM[!is.na(frame$Ah.dose)],method="spearman")
+cor(frame$infect[!is.na(frame$Ah.dose)],frame$Ah.dose[!is.na(frame$Ah.dose)&frame],method="spearman")
 
 setwd(this.dir)
 
