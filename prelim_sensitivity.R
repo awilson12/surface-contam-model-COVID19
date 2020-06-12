@@ -191,49 +191,51 @@ write.csv(frame,'frame_sensitivity.csv')
 windows()
 ggarrange(A,B,D,C,E,G,common.legend = TRUE)
 
-A<-ggplot(frame)+geom_point(aes(x=lambda,y=infect,colour=scenario))+
-  scale_y_continuous(trans="log10")+theme_pubr()
-B<-ggplot(frame)+geom_point(aes(x=beta,y=infect,colour=scenario))+
-  scale_y_continuous(trans="log10")+theme_pubr()
-C<-ggplot(frame)+geom_point(aes(x=surfconc,y=infect,colour=scenario))+
-  scale_y_continuous(trans="log10")+theme_pubr()
-D<-ggplot(frame)+geom_point(aes(x=k.sall,y=infect,colour=scenario))+
-  scale_y_continuous(trans="log10")+theme_pubr()
-E<-ggplot(frame)+geom_point(aes(x=k.hall,y=infect,colour=scenario))+
-  scale_y_continuous(trans="log10")+theme_pubr()
-G<-ggplot(frame)+geom_point(aes(x=SH,y=infect,colour=scenario))+
-  scale_y_continuous(trans="log10")+theme_pubr()
-H<-ggplot(frame)+geom_point(aes(x=duration,y=infect,colour=scenario))+
-  scale_y_continuous(trans="log10")+theme_pubr()
-I<-ggplot(frame)+geom_point(aes(x=beta.dose,y=infect,colour=scenario))+
-  scale_y_continuous(trans="log10")+theme_pubr()
-J<-ggplot(frame)+geom_point(aes(x=alpha,y=infect,colour=scenario))+
-  scale_y_continuous(trans="log10")+theme_pubr()
+frametemp<-frame[frame$infect>1e-15,]
+
+A<-ggplot(frame)+geom_point(aes(x=RNA,y=infect))+
+  scale_y_continuous(trans="log10",name="Infection Risk")+theme_pubr()+
+  scale_x_continuous(name="Fraction of Infectious RNA")
+B<-ggplot(frame)+geom_point(aes(x=surfconc,y=infect))+
+  scale_y_continuous(trans="log10",name="Infection Risk")+theme_pubr()+
+  scale_x_continuous(name=expression("Concentration on Surface (viral particles/cm^2"*")"))
+C<-ggplot(frame)+geom_point(aes(x=TEmouth,y=infect))+
+  scale_y_continuous(trans="log10",name="Infection Risk")+theme_pubr()+
+  scale_x_continuous(name="Hand-to-Face Transfer Efficiency")
+D<-ggplot(frame)+geom_point(aes(x=SM,y=infect))+
+  scale_y_continuous(trans="log10",name="Infection Risk")+theme_pubr()+
+  scale_x_continuous(name="FSA for Hand-to-Face Contact")
+E<-ggplot(frame)+geom_point(aes(x=Ah.dose,y=infect))+
+  scale_y_continuous(trans="log10",name="Infection Risk")+theme_pubr()+
+  scale_x_continuous(name=expression("Total Hand Surface Area (cm"^2*")"))
+G<-ggplot(frame)+geom_point(aes(x=beta,y=infect))+
+  scale_y_continuous(trans="log10",name="Infection Risk")+theme_pubr()+
+  scale_x_continuous(name="Surface-to-Hand Transfer Efficiency")
+H<-ggplot(frame)+geom_point(aes(x=lambda,y=infect))+
+  scale_y_continuous(trans="log10",name="Infection Risk")+theme_pubr()+
+  scale_x_continuous(name="Hand-to-Surface Transfer Efficiency")
+I<-ggplot(frame)+geom_point(aes(x=duration,y=infect))+
+  scale_y_continuous(trans="log10",name="Infection Risk")+theme_pubr()+
+  scale_x_continuous(name="Duration")
+J<-ggplot(frame)+geom_point(aes(x=SH,y=infect))+
+  scale_y_continuous(trans="log10",name="Infection Risk")+theme_pubr()+
+  scale_x_continuous(name="FSA of Hand-to-Surface")
+K<-ggplot(frame)+geom_point(aes(x=k.sall,y=infect))+
+  scale_y_continuous(trans="log10",name="Infection Risk")+theme_pubr()+
+  scale_x_continuous(name="Surface Inactivation Constant")
+L<-ggplot(frame)+geom_point(aes(x=k.hall,y=infect))+
+  scale_y_continuous(trans="log10",name="Infection Risk")+theme_pubr()+
+  scale_x_continuous(name="Hand Inactivation Constant")
+M<-ggplot(frame)+geom_point(aes(x=alpha,y=infect))+
+  scale_y_continuous(trans="log10",name="Infection Risk")+theme_pubr()+
+  scale_x_continuous(name="Alpha (Dose-response)")
+N<-ggplot(frame)+geom_point(aes(x=beta.dose,y=infect))+
+  scale_y_continuous(trans="log10",name="Infection Risk")+theme_pubr()+
+  scale_x_continuous(name="Beta (Dose-response)")
 
 
 windows()
-ggarrange(A,B,C,D,E,G,H,common.legend = TRUE)
+ggarrange(A,B,C,D,E,G,H,I,
+          J,K,L,M,N,common.legend = TRUE)
 
 
-
-A<-ggplot(frame)+geom_point(aes(x=lambda,y=infect,colour=care))+
-  scale_y_continuous(trans="log10")+theme_pubr()
-B<-ggplot(frame)+geom_point(aes(x=beta,y=infect,colour=care))+
-  scale_y_continuous(trans="log10")+theme_pubr()
-C<-ggplot(frame)+geom_point(aes(x=surfconc,y=infect,colour=care))+
-  scale_y_continuous(trans="log10")+scale_x_continuous(trans="log10")+theme_pubr()
-D<-ggplot(frame)+geom_point(aes(x=k.sall,y=infect,colour=care))+
-  scale_y_continuous(trans="log10")+theme_pubr()
-E<-ggplot(frame)+geom_point(aes(x=k.hall,y=infect,colour=care))+
-  scale_y_continuous(trans="log10")+theme_pubr()
-G<-ggplot(frame)+geom_point(aes(x=SH,y=infect,colour=care))+
-  scale_y_continuous(trans="log10")+theme_pubr()
-H<-ggplot(frame)+geom_point(aes(x=duration,y=infect,colour=care))+
-  scale_y_continuous(trans="log10")+theme_pubr()
-
-windows()
-ggarrange(A,B,C,D,E,G,H,common.legend = TRUE)
-
-
-
-  
