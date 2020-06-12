@@ -54,10 +54,10 @@ for(j in 1:NUM.SIM){
    
     if (i ==1){
       
-      RNA<-c(mean(!is.na(IVframe$RNAinfectiousall)),mean(!is.na(Roundsframe$RNAinfectiousall)),mean(!is.na(Obsframe$RNAinfectiousall)))
-      SM<-c(mean(IVframe$SMall),mean(Roundsframe$SMall),mean(Obsframe$SMall))
-      TEmouth<-c(mean(IVframe$TE.tempall),mean(Roundsframe$TE.tempall),mean(Obsframe$TE.tempall))
-      Ah.dose<-c(mean(IVframe$AH.doseall),mean(Roundsframe$AH.doseall),mean(Obsframe$AH.doseall))
+      RNA<-c(mean(IVframe$RNAinfectiousall[!is.na(IVframe$RNAinfectiousall)]),mean(Roundsframe$RNAinfectiousall[!is.na(Roundsframe$RNAinfectiousall)]),mean(Obsframe$RNAinfectiousall[!is.na(Obsframe$RNAinfectiousall)]))
+      SM<-c(mean(IVframe$SMall[IVframe$SMall>0]),mean(Roundsframe$SMall[Roundsframe$SMall>0]),mean(Obsframe$SMall[Obsframe$SMall>0]))
+      TEmouth<-c(mean(IVframe$TE.tempall[IVframe$TE.tempall>0]),mean(Roundsframe$TE.tempall[Roundsframe$TE.tempall>0]),mean(Obsframe$TE.tempall[Obsframe$TE.tempall>0]))
+      Ah.dose<-c(mean(IVframe$AH.doseall[IVframe$AH.doseall>0]),mean(Roundsframe$AH.doseall[Roundsframe$AH.doseall>0]),mean(Obsframe$AH.doseall[Obsframe$AH.doseall>0]))
       beta.dose<-c(mean(IVframe$beta.dose.all),mean(Roundsframe$beta.dose.all),mean(Obsframe$beta.dose.all))
       alpha<-c(mean(IVframe$alphaall),mean(Roundsframe$alphaall),mean(Obsframe$alphaall))
       lambda<-c(mean(IVframe$lambda),mean(Roundsframe$lambda),mean(Obsframe$lambda))
@@ -72,10 +72,10 @@ for(j in 1:NUM.SIM){
       care<-c("IV","Rounds","Obs")
       
     }else{
-      RNAtemp<-c(mean(!is.na(IVframe$RNAinfectiousall)),mean(!is.na(Roundsframe$RNAinfectiousall)),mean(!is.na(Obsframe$RNAinfectiousall)))
-      SMtemp<-c(mean(IVframe$SMall),mean(Roundsframe$SMall),mean(Obsframe$SMall))
-      TEmouthtemp<-c(mean(IVframe$TE.tempall),mean(Roundsframe$TE.tempall),mean(Obsframe$TE.tempall))
-      Ah.dosetemp<-c(mean(IVframe$AH.doseall),mean(Roundsframe$AH.doseall),mean(Obsframe$AH.doseall))
+      RNAtemp<-c(mean(IVframe$RNAinfectiousall[!is.na(IVframe$RNAinfectiousall)]),mean(Roundsframe$RNAinfectiousall[!is.na(Roundsframe$RNAinfectiousall)]),mean(Obsframe$RNAinfectiousall[!is.na(Obsframe$RNAinfectiousall)]))
+      SMtemp<-c(mean(IVframe$SMall[IVframe$SMall>0]),mean(Roundsframe$SMall[Roundsframe$SMall>0]),mean(Obsframe$SMall[Obsframe$SMall>0]))
+      TEmouthtemp<-c(mean(IVframe$TE.tempall[IVframe$TE.tempall>0]),mean(Roundsframe$TE.tempall[Roundsframe$TE.tempall>0]),mean(Obsframe$TE.tempall[Obsframe$TE.tempall>0]))
+      Ah.dosetemp<-c(mean(IVframe$AH.doseall[IVframe$AH.doseall>0]),mean(Roundsframe$AH.doseall[Roundsframe$AH.doseall>0]),mean(Obsframe$AH.doseall[Obsframe$AH.doseall>0]))
       beta.dosetemp<-c(mean(IVframe$beta.dose.all),mean(Roundsframe$beta.dose.all),mean(Obsframe$beta.dose.all))
       alphatemp<-c(mean(IVframe$alphaall),mean(Roundsframe$alphaall),mean(Obsframe$alphaall))
       lambdatemp<-c(mean(IVframe$lambda),mean(Roundsframe$lambda),mean(Obsframe$lambda))
@@ -144,7 +144,10 @@ ggplot(data=melted_cormat,aes(x=Var1,y=Var2,fill=value))+geom_tile()+
 
 cor(frame$infect,frame$beta.dose,method="spearman")
 cor(frame$infect,frame$alpha,method="spearman")
-
+cor(frame$infect[!is.na(frame$RNA)],frame$RNA[!is.na(frame$RNA)],method="spearman")
+cor(frame$infect[!is.na(frame$SM)],frame$SM[!is.na(frame$SM)],method="spearman")
+cor(frame$infect[!is.na(frame$TEmouth)],frame$SM[!is.na(frame$TEmouth)],method="spearman")
+cor(frame$infect[!is.na(frame$Ah.dose)],frame$SM[!is.na(frame$Ah.dose)],method="spearman")
 
 setwd(this.dir)
 
@@ -193,45 +196,45 @@ ggarrange(A,B,D,C,E,G,common.legend = TRUE)
 
 frametemp<-frame[frame$infect>1e-15,]
 
-A<-ggplot(frame)+geom_point(aes(x=RNA,y=infect))+
+A<-ggplot(frametemp[!is.na(frametemp$RNA),])+geom_point(aes(x=RNA,y=infect))+
   scale_y_continuous(trans="log10",name="Infection Risk")+theme_pubr()+
   scale_x_continuous(name="Fraction of Infectious RNA")
-B<-ggplot(frame)+geom_point(aes(x=surfconc,y=infect))+
+B<-ggplot(frametemp)+geom_point(aes(x=surfconc,y=infect))+
   scale_y_continuous(trans="log10",name="Infection Risk")+theme_pubr()+
-  scale_x_continuous(name=expression("Concentration on Surface (viral particles/cm^2"*")"))
-C<-ggplot(frame)+geom_point(aes(x=TEmouth,y=infect))+
+  scale_x_continuous(name=expression("Surface Concentration (viral particles/cm"^2*")"),trans="log10")
+C<-ggplot(frametemp)+geom_point(aes(x=TEmouth,y=infect))+
   scale_y_continuous(trans="log10",name="Infection Risk")+theme_pubr()+
   scale_x_continuous(name="Hand-to-Face Transfer Efficiency")
-D<-ggplot(frame)+geom_point(aes(x=SM,y=infect))+
+D<-ggplot(frametemp)+geom_point(aes(x=SM,y=infect))+
   scale_y_continuous(trans="log10",name="Infection Risk")+theme_pubr()+
   scale_x_continuous(name="FSA for Hand-to-Face Contact")
-E<-ggplot(frame)+geom_point(aes(x=Ah.dose,y=infect))+
+E<-ggplot(frametemp)+geom_point(aes(x=Ah.dose,y=infect))+
   scale_y_continuous(trans="log10",name="Infection Risk")+theme_pubr()+
   scale_x_continuous(name=expression("Total Hand Surface Area (cm"^2*")"))
-G<-ggplot(frame)+geom_point(aes(x=beta,y=infect))+
+G<-ggplot(frametemp)+geom_point(aes(x=beta,y=infect))+
   scale_y_continuous(trans="log10",name="Infection Risk")+theme_pubr()+
   scale_x_continuous(name="Surface-to-Hand Transfer Efficiency")
-H<-ggplot(frame)+geom_point(aes(x=lambda,y=infect))+
+H<-ggplot(frametemp)+geom_point(aes(x=lambda,y=infect))+
   scale_y_continuous(trans="log10",name="Infection Risk")+theme_pubr()+
   scale_x_continuous(name="Hand-to-Surface Transfer Efficiency")
-I<-ggplot(frame)+geom_point(aes(x=duration,y=infect))+
+I<-ggplot(frametemp)+geom_point(aes(x=duration,y=infect))+
   scale_y_continuous(trans="log10",name="Infection Risk")+theme_pubr()+
-  scale_x_continuous(name="Duration")
-J<-ggplot(frame)+geom_point(aes(x=SH,y=infect))+
+  scale_x_continuous(name="Duration (seconds)")
+J<-ggplot(frametemp)+geom_point(aes(x=SH,y=infect))+
   scale_y_continuous(trans="log10",name="Infection Risk")+theme_pubr()+
   scale_x_continuous(name="FSA of Hand-to-Surface")
-K<-ggplot(frame)+geom_point(aes(x=k.sall,y=infect))+
+K<-ggplot(frametemp)+geom_point(aes(x=k.sall,y=infect))+
   scale_y_continuous(trans="log10",name="Infection Risk")+theme_pubr()+
   scale_x_continuous(name="Surface Inactivation Constant")
-L<-ggplot(frame)+geom_point(aes(x=k.hall,y=infect))+
+L<-ggplot(frametemp)+geom_point(aes(x=k.hall,y=infect))+
   scale_y_continuous(trans="log10",name="Infection Risk")+theme_pubr()+
   scale_x_continuous(name="Hand Inactivation Constant")
-M<-ggplot(frame)+geom_point(aes(x=alpha,y=infect))+
+M<-ggplot(frametemp)+geom_point(aes(x=alpha,y=infect))+
   scale_y_continuous(trans="log10",name="Infection Risk")+theme_pubr()+
-  scale_x_continuous(name="Alpha (Dose-response)")
-N<-ggplot(frame)+geom_point(aes(x=beta.dose,y=infect))+
+  scale_x_continuous(name="Alpha (Dose-response)",trans="log10")
+N<-ggplot(frametemp)+geom_point(aes(x=beta.dose,y=infect))+
   scale_y_continuous(trans="log10",name="Infection Risk")+theme_pubr()+
-  scale_x_continuous(name="Beta (Dose-response)")
+  scale_x_continuous(name="Beta (Dose-response)",trans="log10")
 
 
 windows()
