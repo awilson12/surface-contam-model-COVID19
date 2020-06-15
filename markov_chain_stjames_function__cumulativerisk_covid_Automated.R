@@ -562,6 +562,18 @@ A<-ggplot(frameall[frameall$numvisit!=1,])+geom_boxplot(aes(x=probcontambetween,
 windows()
 A
 
+B<-ggplot(frameall[frameall$numvisit!=1,])+geom_boxplot(aes(x=probcontambetween,
+                                                            fill=numvisit,y=dose))+
+  scale_y_continuous(trans="log10",name="Dose")+
+  scale_x_discrete(name="Probability of Contamination Between Care Episodes")+
+  scale_fill_discrete(name="Number of Patient Visits")+
+  facet_grid(numvisit~probpatientinfect,scales="free")+
+  theme_pubr()
+
+windows()
+B
+
+
 
 #----------- summary statistics
 
