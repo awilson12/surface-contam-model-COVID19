@@ -562,16 +562,29 @@ A<-ggplot(frameall[frameall$numvisit!=1,])+geom_boxplot(aes(x=probcontambetween,
 windows()
 A
 
-A.2<-ggplot(frameall[frameall$numvisit!=1,])+geom_boxplot(aes(x=probcontambetween,
+A.2<-ggplot(frameall[frameall$numvisit!=1 & frameall$risk>1e-15,])+geom_boxplot(aes(x=probcontambetween,
                                                             fill=caretype,y=risk))+
   scale_y_continuous(trans="log10",name="Infection Risk")+
   scale_x_discrete(name="Probability of Contamination Between Care Episodes")+
-  scale_fill_discrete(name="Care Type")+
+  scale_fill_grey(name="Care Type",start = 0.4,end=0.8)+
   facet_grid(numvisit~probpatientinfect,scales="free")+
-  theme_pubr()
+  theme_pubr()+ggtitle("A")
 
 windows()
 A.2
+
+A.3<-ggplot(frameall[frameall$numvisit!=1,])+geom_boxplot(aes(x=probcontambetween,
+                                                                                    fill=caretype,y=risk))+
+  scale_y_continuous(trans="log10",name="Infection Risk")+
+  scale_x_discrete(name="Probability of Contamination Between Care Episodes")+
+  scale_fill_grey(name="Care Type",start = 0.4,end=0.8)+
+  facet_grid(numvisit~probpatientinfect,scales="free")+
+  theme_pubr()+ggtitle("B")
+
+windows()
+A.3
+
+ggarrange(A.2,A.3,nrow=2,ncol=1,common.legend = TRUE)
 
 
 B<-ggplot(frameall[frameall$numvisit!=1,])+geom_boxplot(aes(x=probcontambetween,
@@ -735,6 +748,57 @@ summary.stats.dose(probcontambetween=0.5,numvisit=14,probpatientinfect=1)
 summary.stats.dose(probcontambetween=0.8,numvisit=14,probpatientinfect=0.05)
 summary.stats.dose(probcontambetween=0.8,numvisit=14,probpatientinfect=0.5)
 summary.stats.dose(probcontambetween=0.8,numvisit=14,probpatientinfect=1)
+
+
+#---------------- dose summary stats, care type specific
+
+
+summary.stats.dose.caretype<-function(probcontambetween,numvisit,probpatientinfect,caretype=c("IV")){
+  
+  print(signif(summary(frameall$dose[frameall$probcontambetween==probcontambetween & 
+                                       frameall$numvisit==numvisit &
+                                       frameall$probpatientinfect==probpatientinfect & frameall$caretype==caretype]),2))
+  print(signif(min(frameall$dose[frameall$probcontambetween==probcontambetween & 
+                                   frameall$numvisit==numvisit &
+                                   frameall$probpatientinfect==probpatientinfect & frameall$caretype==caretype]),2))
+  
+  
+  
+  
+  print(signif(sd(frameall$dose[frameall$probcontambetween==probcontambetween & 
+                                  frameall$numvisit==numvisit &
+                                  frameall$probpatientinfect==probpatientinfect & frameall$caretype==caretype]),2))
+  
+}
+
+caretype="IV"
+
+summary.stats.dose.caretype(probcontambetween=0.8,numvisit=1,probpatientinfect=1,caretype=caretype)
+
+summary.stats.dose.caretype(probcontambetween=0.1,numvisit=7,probpatientinfect=0.05,caretype=caretype)
+summary.stats.dose.caretype(probcontambetween=0.1,numvisit=7,probpatientinfect=0.5,caretype=caretype)
+summary.stats.dose.caretype(probcontambetween=0.1,numvisit=7,probpatientinfect=1,caretype=caretype)
+
+summary.stats.dose.caretype(probcontambetween=0.5,numvisit=7,probpatientinfect=0.05,caretype=caretype)
+summary.stats.dose.caretype(probcontambetween=0.5,numvisit=7,probpatientinfect=0.5,caretype=caretype)
+summary.stats.dose.caretype(probcontambetween=0.5,numvisit=7,probpatientinfect=1,caretype=caretype)
+
+summary.stats.dose.caretype(probcontambetween=0.8,numvisit=7,probpatientinfect=0.05,caretype=caretype)
+summary.stats.dose.caretype(probcontambetween=0.8,numvisit=7,probpatientinfect=0.5,caretype=caretype)
+summary.stats.dose.caretype(probcontambetween=0.8,numvisit=7,probpatientinfect=1,caretype=caretype)
+
+
+summary.stats.dose.caretype(probcontambetween=0.1,numvisit=14,probpatientinfect=0.05,caretype=caretype)
+summary.stats.dose.caretype(probcontambetween=0.1,numvisit=14,probpatientinfect=0.5,caretype=caretype)
+summary.stats.dose.caretype(probcontambetween=0.1,numvisit=14,probpatientinfect=1,caretype=caretype)
+
+summary.stats.dose.caretype(probcontambetween=0.5,numvisit=14,probpatientinfect=0.05,caretype=caretype)
+summary.stats.dose.caretype(probcontambetween=0.5,numvisit=14,probpatientinfect=0.5,caretype=caretype)
+summary.stats.dose.caretype(probcontambetween=0.5,numvisit=14,probpatientinfect=1,caretype=caretype)
+
+summary.stats.dose.caretype(probcontambetween=0.8,numvisit=14,probpatientinfect=0.05,caretype=caretype)
+summary.stats.dose.caretype(probcontambetween=0.8,numvisit=14,probpatientinfect=0.5,caretype=caretype)
+summary.stats.dose.caretype(probcontambetween=0.8,numvisit=14,probpatientinfect=1,caretype=caretype)
 
 
 
