@@ -562,6 +562,18 @@ A<-ggplot(frameall[frameall$numvisit!=1,])+geom_boxplot(aes(x=probcontambetween,
 windows()
 A
 
+A.2<-ggplot(frameall[frameall$numvisit!=1,])+geom_boxplot(aes(x=probcontambetween,
+                                                            fill=caretype,y=risk))+
+  scale_y_continuous(trans="log10",name="Infection Risk")+
+  scale_x_discrete(name="Probability of Contamination Between Care Episodes")+
+  scale_fill_discrete(name="Care Type")+
+  facet_grid(numvisit~probpatientinfect,scales="free")+
+  theme_pubr()
+
+windows()
+A.2
+
+
 B<-ggplot(frameall[frameall$numvisit!=1,])+geom_boxplot(aes(x=probcontambetween,
                                                             fill=numvisit,y=dose))+
   scale_y_continuous(trans="log10",name="Dose")+
@@ -622,6 +634,57 @@ summary.stats(probcontambetween=0.5,numvisit=14,probpatientinfect=1)
 summary.stats(probcontambetween=0.8,numvisit=14,probpatientinfect=0.05)
 summary.stats(probcontambetween=0.8,numvisit=14,probpatientinfect=0.5)
 summary.stats(probcontambetween=0.8,numvisit=14,probpatientinfect=1)
+
+
+#----------- summary statistics per caretype
+
+summary.stats.caretype<-function(probcontambetween,numvisit,probpatientinfect,caretype=c("IV")){
+  
+  print(signif(summary(frameall$risk[frameall$probcontambetween==probcontambetween & 
+                                       frameall$numvisit==numvisit &
+                                       frameall$probpatientinfect==probpatientinfect & frameall$caretype==caretype]),2))
+  print(signif(min(frameall$risk[frameall$probcontambetween==probcontambetween & 
+                                   frameall$numvisit==numvisit &
+                                   frameall$probpatientinfect==probpatientinfect & frameall$caretype==caretype]),2))
+  
+  
+  
+  
+  print(signif(sd(frameall$risk[frameall$probcontambetween==probcontambetween & 
+                                  frameall$numvisit==numvisit &
+                                  frameall$probpatientinfect==probpatientinfect & frameall$caretype==caretype]),2))
+  
+}
+
+caretype="IV"
+
+summary.stats.caretype(probcontambetween=0.8,numvisit=1,probpatientinfect=1,caretype=caretype)
+
+summary.stats.caretype(probcontambetween=0.1,numvisit=7,probpatientinfect=0.05,caretype=caretype)
+summary.stats.caretype(probcontambetween=0.1,numvisit=7,probpatientinfect=0.5,caretype=caretype)
+summary.stats.caretype(probcontambetween=0.1,numvisit=7,probpatientinfect=1,caretype=caretype)
+
+summary.stats.caretype(probcontambetween=0.5,numvisit=7,probpatientinfect=0.05,caretype=caretype)
+summary.stats.caretype(probcontambetween=0.5,numvisit=7,probpatientinfect=0.5,caretype=caretype)
+summary.stats.caretype(probcontambetween=0.5,numvisit=7,probpatientinfect=1,caretype=caretype)
+
+summary.stats.caretype(probcontambetween=0.8,numvisit=7,probpatientinfect=0.05,caretype=caretype)
+summary.stats.caretype(probcontambetween=0.8,numvisit=7,probpatientinfect=0.5,caretype=caretype)
+summary.stats.caretype(probcontambetween=0.8,numvisit=7,probpatientinfect=1,caretype=caretype)
+
+
+summary.stats.caretype(probcontambetween=0.1,numvisit=14,probpatientinfect=0.05,caretype=caretype)
+summary.stats.caretype(probcontambetween=0.1,numvisit=14,probpatientinfect=0.5,caretype=caretype)
+summary.stats.caretype(probcontambetween=0.1,numvisit=14,probpatientinfect=1,caretype=caretype)
+
+summary.stats.caretype(probcontambetween=0.5,numvisit=14,probpatientinfect=0.05,caretype=caretype)
+summary.stats.caretype(probcontambetween=0.5,numvisit=14,probpatientinfect=0.5,caretype=caretype)
+summary.stats.caretype(probcontambetween=0.5,numvisit=14,probpatientinfect=1,caretype=caretype)
+
+summary.stats.caretype(probcontambetween=0.8,numvisit=14,probpatientinfect=0.05,caretype=caretype)
+summary.stats.caretype(probcontambetween=0.8,numvisit=14,probpatientinfect=0.5,caretype=caretype)
+summary.stats.caretype(probcontambetween=0.8,numvisit=14,probpatientinfect=1,caretype=caretype)
+
 
 
 #---------------- dose summary stats
