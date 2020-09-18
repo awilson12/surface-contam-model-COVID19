@@ -192,54 +192,74 @@ write.csv(frame,'frame_sensitivity.csv')
 #  scale_fill_continuous(name=expression("log"[10]*phantom(x)*"Infection Risk"))+
 #  theme_pubr()
 
-windows()
-ggarrange(A,B,D,C,E,G,common.legend = TRUE)
+#windows()
+#ggarrange(A,B,D,C,E,G,common.legend = TRUE)
 
 
 
-A<-ggplot(frametemp[!is.na(frametemp$RNA),])+geom_point(aes(x=RNA,y=infect))+
+A<-ggplot(frametemp[!is.na(frametemp$RNA),])+geom_bin2d(aes(x=RNA,y=infect))+
   scale_y_continuous(trans="log10",name="Infection Risk")+theme_pubr()+
-  scale_x_continuous(name="Fraction of Infectious RNA")
-B<-ggplot(frametemp)+geom_point(aes(x=surfconc,y=infect))+
+  scale_x_continuous(name="Fraction of Infectious RNA")+
+  scale_fill_continuous(type = "viridis") 
+B<-ggplot(frametemp)+geom_bin2d(aes(x=surfconc,y=infect))+
   scale_y_continuous(trans="log10",name="Infection Risk")+theme_pubr()+
-  scale_x_continuous(name=expression("Surface Concentration (viral particles/cm"^2*")"),trans="log10")
-C<-ggplot(frametemp)+geom_point(aes(x=TEmouth,y=infect))+
+  scale_x_continuous(name=expression("Surface Concentration (viruses/cm"^2*")"),trans="log10")+
+  scale_fill_continuous(type = "viridis") 
+C<-ggplot(frametemp)+geom_bin2d(aes(x=TEmouth,y=infect))+
   scale_y_continuous(trans="log10",name="Infection Risk")+theme_pubr()+
-  scale_x_continuous(name="Hand-to-Face Transfer Efficiency")
-D<-ggplot(frametemp)+geom_point(aes(x=SM,y=infect))+
+  scale_x_continuous(name="Hand-to-Face Transfer Efficiency")+
+  scale_fill_continuous(type = "viridis") 
+D<-ggplot(frametemp)+geom_bin2d(aes(x=SM,y=infect))+
   scale_y_continuous(trans="log10",name="Infection Risk")+theme_pubr()+
-  scale_x_continuous(name="FSA for Hand-to-Face Contact")
-E<-ggplot(frametemp)+geom_point(aes(x=Ah.dose,y=infect))+
+  scale_x_continuous(name="FSA for Hand-to-Face Contact")+
+  scale_fill_continuous(type = "viridis") 
+E<-ggplot(frametemp)+geom_bin2d(aes(x=Ah.dose,y=infect))+
   scale_y_continuous(trans="log10",name="Infection Risk")+theme_pubr()+
-  scale_x_continuous(name=expression("Total Hand Surface Area (cm"^2*")"))
-G<-ggplot(frametemp)+geom_point(aes(x=beta,y=infect))+
+  scale_x_continuous(name=expression("Total Hand Surface Area (cm"^2*")"))+
+  scale_fill_continuous(type = "viridis") 
+G<-ggplot(frametemp)+geom_bin2d(aes(x=beta,y=infect))+
   scale_y_continuous(trans="log10",name="Infection Risk")+theme_pubr()+
-  scale_x_continuous(name="Surface-to-Hand Transfer Efficiency")
-H<-ggplot(frametemp)+geom_point(aes(x=lambda,y=infect))+
+  scale_x_continuous(name="Surface-to-Hand Transfer Efficiency")+
+  scale_fill_continuous(type = "viridis") 
+H<-ggplot(frametemp)+geom_bin2d(aes(x=lambda,y=infect))+
   scale_y_continuous(trans="log10",name="Infection Risk")+theme_pubr()+
-  scale_x_continuous(name="Hand-to-Surface Transfer Efficiency")
-I<-ggplot(frametemp)+geom_point(aes(x=duration,y=infect))+
+  scale_x_continuous(name="Hand-to-Surface Transfer Efficiency")+
+  scale_fill_continuous(type = "viridis") 
+I<-ggplot(frametemp)+geom_bin2d(aes(x=duration,y=infect))+
   scale_y_continuous(trans="log10",name="Infection Risk")+theme_pubr()+
-  scale_x_continuous(name="Duration (seconds)")
-J<-ggplot(frametemp)+geom_point(aes(x=SH,y=infect))+
+  scale_x_continuous(name="Duration (seconds)")+
+  scale_fill_continuous(type = "viridis") 
+J<-ggplot(frametemp)+geom_bin2d(aes(x=SH,y=infect))+
   scale_y_continuous(trans="log10",name="Infection Risk")+theme_pubr()+
-  scale_x_continuous(name="FSA of Hand-to-Surface")
-K<-ggplot(frametemp)+geom_point(aes(x=k.sall,y=infect))+
+  scale_x_continuous(name="FSA of Hand-to-Surface")+
+  scale_fill_continuous(type = "viridis") 
+K<-ggplot(frametemp)+geom_bin2d(aes(x=k.sall,y=infect))+
   scale_y_continuous(trans="log10",name="Infection Risk")+theme_pubr()+
-  scale_x_continuous(name="Surface Inactivation Constant")
-L<-ggplot(frametemp)+geom_point(aes(x=k.hall,y=infect))+
+  scale_x_continuous(name="Surface Inactivation Constant")+
+  scale_fill_continuous(type = "viridis") 
+L<-ggplot(frametemp)+geom_bin2d(aes(x=k.hall,y=infect))+
   scale_y_continuous(trans="log10",name="Infection Risk")+theme_pubr()+
-  scale_x_continuous(name="Hand Inactivation Constant")
-M<-ggplot(frametemp)+geom_point(aes(x=alpha,y=infect))+
+  scale_x_continuous(name="Hand Inactivation Constant")+
+  scale_fill_continuous(type = "viridis") 
+M<-ggplot(frametemp)+geom_bin2d(aes(x=alpha,y=infect))+
   scale_y_continuous(trans="log10",name="Infection Risk")+theme_pubr()+
-  scale_x_continuous(name="Alpha (Dose-response)",trans="log10")
-N<-ggplot(frametemp)+geom_point(aes(x=beta.dose,y=infect))+
+  scale_x_continuous(name="Alpha (Dose-response)",trans="log10")+
+  scale_fill_continuous(type = "viridis") 
+N<-ggplot(frametemp)+geom_bin2d(aes(x=beta.dose,y=infect))+
   scale_y_continuous(trans="log10",name="Infection Risk")+theme_pubr()+
-  scale_x_continuous(name="Beta (Dose-response)",trans="log10")
+  scale_x_continuous(name="Beta (Dose-response)",trans="log10")+
+  scale_fill_continuous(type = "viridis") 
 
 
-windows()
+#windows()
 ggarrange(A,B,C,D,E,G,H,I,
           J,K,L,M,N,common.legend = TRUE)
+
+# ggplot(subset(frameall, aes(x = risk, y = probpatientinfect, fill = ..x..)) +
+#   geom_density_ridges_gradient(scale = 3, rel_min_height = 0.01) +
+#   scale_fill_continuous(type = "viridis") +
+#   scale_x_continuous(trans="log10",name="Infection Risk")+theme_pubr()
+#   #scale_x_continuous(name="Beta (Dose-response)",trans="log10")
+
 
 
