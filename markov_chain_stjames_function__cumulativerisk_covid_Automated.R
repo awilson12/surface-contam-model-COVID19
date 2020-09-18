@@ -18,7 +18,7 @@ if("triangle" %in% rownames(installed.packages())==FALSE){install.packages("tria
 
 # CONSTANTS TO BE USED 
 
-SIM.iter <- 10000     # Making a master Monte Carlo iteration value
+SIM.iter <- 10   # Making a master Monte Carlo iteration value
 suppressMessages(source("adjust_behaviors_covid.R"))
 
 
@@ -142,12 +142,12 @@ behavior.sim<-function(caretype=c("IV","Obs","Rounds"),numsequence,prob.patient.
       #transfer efficiencies for non-patient surf
       
       #lambda hand--> surface and beta surface --> hand
-      lambda[behavior!="Patient"]<-runif(length(lambda[behavior!="Patient"]),0.0003,.217)
-      beta[behavior!="Patient"]<-runif(length(lambda[behavior!="Patient"]),0.0003,.217)
-      
+      lambda[behavior!="Patient"]<-rtrunc(length(lambda[behavior!="Patient"]),spec="norm",a=0,b=1,mean=0.123,sd=0.068)#runif(length(lambda[behavior!="Patient"]),0.0003,.217)
+      beta[behavior!="Patient"]<-rtrunc(length(lambda[behavior!="Patient"]),spec="norm",a=0,b=1,mean=0.118,sd=0.088)#runif(length(lambda[behavior!="Patient"]),0.0003,.217)
+      #Mean and SD from: https://bmcinfectdis.biomedcentral.com/articles/10.1186/s12879-018-3425-x/tables/1
       #transfer efficiency patient skin contacts
-      lambda[behavior=="Patient"]<-rtrunc(length(lambda[behavior=="Patient"]),spec="norm",a=0,b=1,mean=0.056,sd=0.032)
-      beta[behavior=="Patient"]<-rtrunc(length(lambda[behavior=="Patient"]),spec="norm",a=0,b=1,mean=0.056,sd=0.032)
+      lambda[behavior=="Patient"]<-rtrunc(length(lambda[behavior=="Patient"]),spec="norm",a=0,b=1,mean=0.123,sd=0.068)#mean=.3,sd=.1)
+      beta[behavior=="Patient"]<-rtrunc(length(lambda[behavior=="Patient"]),spec="norm",a=0,b=1,mean=0.118,sd=0.088)
       
       #-------------- SURFACE CONCENTRATIONS -----------------------------------------------------------------------------
       
@@ -203,7 +203,7 @@ behavior.sim<-function(caretype=c("IV","Obs","Rounds"),numsequence,prob.patient.
       SH[behavior=="Patient"]<-runif(length(SH[behavior=="Patient"]),0.04,0.25) 
       
       #fractional surface area for variety of grip types (non "in"/"out" contacts)
-      SH[behavior=="Equipment"|behavior=="FarPatient"|behavior=="NearPatient"|behavior=="HygieneInside"]<-runif(length(SH[behavior=="Equipment"|behavior=="FarPatient"|behavior=="NearPatient"|behavior=="HygieneInside"]),0.04/5,0.25)
+      SH[behavior=="Equipment"|behavior=="FarPatient"|behavior=="NearPatient"|behavior=="HygieneInside"]<-runif(length(SH[behavior=="Equipment"|behavior=="FarPatient"|behavior=="NearPatient"|behavior=="HygieneInside"]),0.04/5,0.25) # change 06-07-2020 0.04/5
       #min and max of left and right hands in AuYeung et al. (2008) for various hand grip and hand press contacts (hand immersion contacts not included)
       #from single fingertip up to full palm
       
@@ -216,9 +216,9 @@ behavior.sim<-function(caretype=c("IV","Obs","Rounds"),numsequence,prob.patient.
       
       #------------- INACTIVATION CONSTANTS -----------------------------------------------------------------------------
       
-      #surface
-      t99.s<-runif(length(behavior),3,5*24)*3600 #T99 in seconds
-      k.s<-(-log(1/(10^2))/t99.s)
+      #surface #This isn't t99 but t50  from Doremalen et al. 2020
+      t50.s<-runif(length(behavior),4.59,8.17)*3600# 11-07-2020 change for widest CI runif(length(behavior),3,5*24)*3600 #T99 in seconds
+      k.s<--log(2)/t50.s#(-log(1/(10^2))/t50.s)
       
       t99.h<-runif(length(behavior),1,6)*3600 #T99 in seconds
       k.h<-(-log(1/(10^2))/t99.h)
@@ -231,13 +231,13 @@ behavior.sim<-function(caretype=c("IV","Obs","Rounds"),numsequence,prob.patient.
       
       #placeholder for now in case we want to adjust duration
       duration<-sample(durations$Duration,length(behavior),replace=TRUE)
-      
+      timeSinceClean<-runif(length(behavior),0,24) #Since last cleaning
       
         if(hand[1]=="right"){
-          handR[1]<-beta[1]*SH[1]*(surfconc[1]*exp(-k.s[1]*duration[1]))
+          handR[1]<-beta[1]*SH[1]*(surfconc[1]*exp(-k.s[1]*timeSinceClean[1]))#beta[1]*SH[1]*(surfconc[1]*exp(-k.s[1]*duration[1]))
           handL[1]<-0  
         }else{ #if hand[1] == left...
-          handL[1]<-beta[1]*SH[1]*(surfconc[1]*exp(-k.s[1]*duration[1]))
+          handL[1]<-beta[1]*SH[1]*(surfconc[1]*exp(-k.s[1]*timeSinceClean[1]))
           handR[1]<-0 
         }
 
@@ -245,12 +245,12 @@ behavior.sim<-function(caretype=c("IV","Obs","Rounds"),numsequence,prob.patient.
         
         if(hand[a]=="right"){
           
-            handR[a]<-(handR[a-1]-(lambda[a]*SH[a]*handR[a-1]*exp(-k.h[a]*duration[a]))+(beta[a]*SH[a]*surfconc[a]*exp(-k.s[a]*duration[a])))
+            handR[a]<-(handR[a-1]-(lambda[a]*SH[a]*handR[a-1]*exp(-k.h[a]*duration[a]))+(beta[a]*SH[a]*surfconc[a]*exp(-k.s[a]*timeSinceClean[a])))#(handR[a-1]-(lambda[a]*SH[a]*handR[a-1]*exp(-k.h[a]*duration[a]))+(beta[a]*SH[a]*surfconc[a]*exp(-k.s[a]*duration[a])))
             handL[a]<-handL[a-1]
 
         }else{ #if hand[a] == left...
           
-            handL[a]<-(handL[a-1]-(lambda[a]*SH[a]*handL[a-1]*exp(-k.h[a]*duration[a]))+(beta[a]*SH[a]*surfconc[a]*exp(-k.s[a]*duration[a])))
+            handL[a]<-(handR[a-1]-(lambda[a]*SH[a]*handR[a-1]*exp(-k.h[a]*duration[a]))+(beta[a]*SH[a]*surfconc[a]*exp(-k.s[a]*timeSinceClean[a])))#(handL[a-1]-(lambda[a]*SH[a]*handL[a-1]*exp(-k.h[a]*duration[a]))+(beta[a]*SH[a]*surfconc[a]*exp(-k.s[a]*duration[a])))
             handR[a]<-handR[a-1]
         }
       
@@ -288,27 +288,27 @@ behavior.sim<-function(caretype=c("IV","Obs","Rounds"),numsequence,prob.patient.
         
         if(randomnum<=prob.contam.between){
           
-          handRbefore<-(handR[a]*(3*10^-7))+handRbefore   #assume % of viral titer in study represents transfer potential when doffing
-          handLbefore<-(handL[a]*(3*10^-7))+handLbefore   #assume % of viral titer in study represents transfer potential when doffing
+          handRbefore<-(handR[a]*runif(1,3*10^-7,.1))+handRbefore  #06-07-2020 change (3*10^-7) #assume % of viral titer in study represents transfer potential when doffing
+          handLbefore<-(handL[a]*runif(1,3*10^-7,.1))+handLbefore   #assume % of viral titer in study represents transfer potential when doffing
           
           #ethanol hand rub (described by Kampf et al. 2020 as recommended step after doffing)
           washnum<-runif(1,0,1)
           
           if (washnum<=.5){
             #then they wash their hands
-            handRbefore<-handRbefore*(1/10^rtrunc(1,spec="norm",a=0,b=6,mean=1.62,sd=0.12)) #based on dist from Marco
-            handLbefore<-handLbefore*(1/10^rtrunc(1,spec="norm",a=0,b=6,mean=1.62,sd=0.12)) #based on dist from Marco
+            handRbefore<-handRbefore*(1-(rtrunc(1,spec="norm",a=0,b=1,mean=abs(1-10^(-1.62)),sd=abs(1-10^0.12))))# change 06-07-2020 (1/10^rtrunc(1,spec="norm",a=0,b=6,mean=1.62,sd=0.12)) #based on dist from Marco
+            handLbefore<-handLbefore*(1-(rtrunc(1,spec="norm",a=0,b=1,mean=abs(1-10^(-1.62)),sd=abs(1-10^0.12))))# change 06-07-2020 (1/10^rtrunc(1,spec="norm",a=0,b=6,mean=1.62,sd=0.12)) #based on dist from Marco
           }else{
             #otherwise they use hand sanitizer
-            handRbefore<-handRbefore*(1/10^runif(1,2,4)) #based on Kampf et al. (2020)
-            handLbefore<-handLbefore*(1/10^runif(1,2,4)) #based on Kampf et al. (2020)
+            handRbefore<-handRbefore*runif(1,1E-4,1E-2)#6-07-2020 change (1/10^runif(1,2,4))  #based on Kampf et al. (2020)
+            handLbefore<-handLbefore*runif(1,1E-4,1E-2)#6-07-2020 change (1/10^runif(1,2,4)) #based on Kampf et al. (2020)
           }
           
           #Determines which hand will be used for the hand-to-face contact
-          whichhand<-runif(1,0,1)
+          whichhand<-runif(1,0,1) #Nan's paper says that the non-dominant hand does most face touching - Could 
           
           #transfer efficiency to mouth
-          TEtemp<-rtrunc(1,spec="norm",a=0,b=1,mean=.3390,sd=0.15) #mean: Rusin et al. (2002); sd: Lopez et al. (2012)
+          TEtemp<-rtrunc(1,spec="norm",a=0,b=1,mean=.3390,sd=.2) #mean: Rusin et al. (2002); sd: Lopez et al. (2012) 0.15. New Rusin data SD= 20%
           
           #fraction of hand used in mouth contact
           SMtemp<-runif(1,0.04/5, 0.06/5) #single fingertip surface area fraction = front partial fingers fractional surface area / 5
@@ -550,53 +550,92 @@ frameall<-data.frame(risk=risk,probcontambetween=as.character(prob.contam.betwee
 require(ggplot2)
 require(ggpubr)
 
+# Stair plot
+df<-behavior.total[[1]] %>%as.data.frame()%>%set_colnames("df")
+ggplot(df) +
+  geom_step(aes(x=seq_along(df), y=df,group=1)) +
+  geom_point(aes(x=seq_along(df), y=df),color="red")+
+  xlab("Surface contact number") +
+  ylab("Surface type") + theme_pubr()
 
-A<-ggplot(frameall[frameall$numvisit!=1,])+geom_boxplot(aes(x=probcontambetween,
-                                    fill=numvisit,y=risk))+
-  scale_y_continuous(trans="log10",name="Infection Risk")+
-  scale_x_discrete(name="Probability of Contamination Between Care Episodes")+
-  scale_fill_discrete(name="Number of Patient Visits")+
-  facet_grid(numvisit~probpatientinfect,scales="free")+
+# Risk plots
+# A<-ggplot(frameall[frameall$numvisit!=1,])+geom_boxplot(aes(x=probcontambetween,
+#                                     fill=numvisit,y=risk))+
+#   scale_y_continuous(trans="log10",name="Infection Risk")+
+#   scale_x_discrete(name="Probability of Contamination Between Care Episodes")+
+#   scale_fill_brewer(palette = "Paired")+#scale_fill_discrete(name="Number of Patient Visits")+
+#   facet_grid(numvisit~probpatientinfect,scales="free")+
+#   theme_pubr()
+# 
+# 
+# ggplot(frameall[frameall$numvisit!=1,])+
+#   geom_density(aes(fill=numvisit,x=risk),width=0.3)+
+#   scale_x_continuous(trans="log10",name="Infection Risk")+
+#   #scale_x_discrete(name="Probability of Contamination Between Care Episodes")+
+#   scale_fill_brewer(palette = "Set1",name="Number of Patient Visits")+#scale_fill_discrete(name="Number of Patient Visits")+
+#   facet_grid(numvisit~probpatientinfect,scales="free")+
+#   theme_pubr()
+
+require(data.table)
+df<-setDT(frameall)[,.(Mean = mean(risk*100), SD = sd(risk*100), Min = min(risk*100), Max = max(risk*100)), by = c('caretype','probcontambetween', 'probpatientinfect', 'numvisit')]
+df$numvisit <- factor(df$numvisit, levels = c(1,7,14))
+
+# stat.test <- frameall %>%
+#   group_by('caretype','probcontambetween', 'probpatientinfect', 'numvisit') %>%
+#   t_test(len ~ risk, ref.group = "0.5") 
+
+#Barplot with standard deviations
+ggplot(subset(df)) +
+  geom_bar( aes(x=probcontambetween,y=Mean,fill=caretype), stat="identity",  position='dodge') + #, fill="skyblue"
+  geom_pointrange( aes(x=probcontambetween, y=Mean, ymin=pmax(Mean - SD, 0), ymax=Mean+SD, position=caretype), colour="black", alpha=0.9, size=0.2, position = position_dodge(width =1))+
+  facet_grid(numvisit~probpatientinfect,scales="free",
+             labeller = labeller(
+               numvisit = c(`1` = "1 care episode",`7` = "7 care episodes", `14` = "14 care episodes"),
+               probpatientinfect = c(`0.05` = "5% COVID load", `0.5` = "50% COVID load",  `1` = "100% COVID load")
+             ))+
+  scale_fill_brewer(palette = "Set1",name="Care Type")+
+  scale_x_discrete(name="Probability of self contamination (out of 1)")+
+  scale_y_continuous(name="Infection risk %")+
   theme_pubr()
 
-windows()
-A
+#windowss() https://github.com/eliocamp/ggnewscale
+#A
 
-A.2<-ggplot(frameall[frameall$numvisit!=1 & frameall$risk>1e-15,])+geom_boxplot(aes(x=probcontambetween,
-                                                            fill=caretype,y=risk))+
-  scale_y_continuous(trans="log10",name="Infection Risk")+
-  scale_x_discrete(name="Probability of Contamination Between Care Episodes")+
-  scale_fill_grey(name="Care Type",start = 0.4,end=0.8)+
-  facet_grid(numvisit~probpatientinfect,scales="free")+
-  theme_pubr()+ggtitle("A")
-
-windows()
-A.2
-
-A.3<-ggplot(frameall[frameall$numvisit!=1,])+geom_boxplot(aes(x=probcontambetween,
-                                                                                    fill=caretype,y=risk))+
-  scale_y_continuous(trans="log10",name="Infection Risk")+
-  scale_x_discrete(name="Probability of Contamination Between Care Episodes")+
-  scale_fill_grey(name="Care Type",start = 0.4,end=0.8)+
-  facet_grid(numvisit~probpatientinfect,scales="free")+
-  theme_pubr()+ggtitle("B")
-
-windows()
-A.3
-
-ggarrange(A.2,A.3,nrow=2,ncol=1,common.legend = TRUE)
-
-
-B<-ggplot(frameall[frameall$numvisit!=1,])+geom_boxplot(aes(x=probcontambetween,
-                                                            fill=numvisit,y=dose))+
-  scale_y_continuous(trans="log10",name="Dose")+
-  scale_x_discrete(name="Probability of Contamination Between Care Episodes")+
-  scale_fill_discrete(name="Number of Patient Visits")+
-  facet_grid(numvisit~probpatientinfect,scales="free")+
-  theme_pubr()
-
-windows()
-B
+# A.2<-ggplot(frameall[frameall$numvisit!=1 & frameall$risk>1e-15,])+geom_boxplot(aes(x=probcontambetween,
+#                                                             fill=caretype,y=risk))+
+#   scale_y_continuous(trans="log10",name="Infection Risk")+
+#   scale_x_discrete(name="Probability of Contamination Between Care Episodes")+
+#   scale_fill_grey(name="Care Type",start = 0.4,end=0.8)+
+#   facet_grid(numvisit~probpatientinfect,scales="free")+
+#   theme_pubr()+ggtitle("A")
+# 
+# #windowss()
+# A.2
+# 
+# A.3<-ggplot(frameall[frameall$numvisit!=1,])+geom_boxplot(aes(x=probcontambetween,
+#                                                                                     fill=caretype,y=risk))+
+#   scale_y_continuous(trans="log10",name="Infection Risk")+
+#   scale_x_discrete(name="Probability of Contamination Between Care Episodes")+
+#   scale_fill_grey(name="Care Type",start = 0.4,end=0.8)+
+#   facet_grid(numvisit~probpatientinfect,scales="free")+
+#   theme_pubr()+ggtitle("B")
+# 
+# #windowss()
+# A.3
+# 
+# ggarrange(A.2,A.3,nrow=2,ncol=1,common.legend = TRUE)
+# 
+# 
+# B<-ggplot(frameall[frameall$numvisit!=1,])+geom_boxplot(aes(x=probcontambetween,
+#                                                             fill=numvisit,y=dose))+
+#   scale_y_continuous(trans="log10",name="Dose")+
+#   scale_x_discrete(name="Probability of Contamination Between Care Episodes")+
+#   scale_fill_discrete(name="Number of Patient Visits")+
+#   facet_grid(numvisit~probpatientinfect,scales="free")+
+#   theme_pubr()
+# 
+# #windowss()
+# B
 
 
 
