@@ -220,7 +220,7 @@ behavior.sim<-function(caretype=c("IV","Obs","Rounds"),numsequence,prob.patient.
       t50.s<-runif(length(behavior),4.59,8.17)*3600# 11-07-2020 change for widest CI runif(length(behavior),3,5*24)*3600 #T99 in seconds
       k.s<-log(2)/t50.s#(-log(1/(10^2))/t50.s) #corrected error with negative sign
       
-      t99.h<-runif(length(behavior),1,6)*3600 #T99 in seconds
+      t99.h<-runif(length(behavior),1,8)*3600 #T99 in seconds
       k.h<-(-log(1/(10^2))/t99.h)
       
       #-------------- EXPOSURE SIMULATION ------------------------------------------------------------------------------
