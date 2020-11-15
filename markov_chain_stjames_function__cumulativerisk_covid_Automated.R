@@ -8,6 +8,8 @@ setwd(this.dir)
 if("truncdist" %in% rownames(installed.packages())==FALSE){install.packages("truncdist"); require(truncdist)}else{require(truncdist)}
 if("gsl" %in% rownames(installed.packages())==FALSE){install.packages("gsl"); require(gsl)}else{require(gsl)}
 if("triangle" %in% rownames(installed.packages())==FALSE){install.packages("triangle"); require(triangle)}else{require(triangle)}
+if("dplyr" %in% rownames(installed.packages())==FALSE){install.packages("dplyr"); require(dplyr)}else{require(dplyr)}
+if("magrittr" %in% rownames(installed.packages())==FALSE){install.packages("magrittr"); require(magrittr)}else{require(magrittr)}
 
 # IMPORT DATA NEEDED FOR ALL OPERATIONS DURING AUTOMATION -----
 
@@ -584,6 +586,7 @@ df$numvisit <- factor(df$numvisit, levels = c(1,7,14))
 #   t_test(len ~ risk, ref.group = "0.5") 
 
 #Barplot with standard deviations
+windows()
 ggplot(subset(df)) +
   geom_bar( aes(x=probcontambetween,y=Mean,fill=caretype), stat="identity",  position='dodge') + #, fill="skyblue"
   geom_pointrange( aes(x=probcontambetween, y=Mean, ymin=pmax(Mean - SD, 0), ymax=Mean+SD, position=caretype), colour="black", alpha=0.9, size=0.2, position = position_dodge(width =1))+
@@ -595,7 +598,9 @@ ggplot(subset(df)) +
   scale_fill_brewer(palette = "Set1",name="Care Type")+
   scale_x_discrete(name="Probability of self contamination (out of 1)")+
   scale_y_continuous(name="Infection risk %")+
-  theme_pubr()
+  theme_pubr()+theme(axis.text=element_text(size=18),axis.title=element_text(size=18),
+                     strip.text = element_text(size=15),legend.text = element_text(size=18),
+                     legend.title = element_text(size=18))
 
 #windowss() https://github.com/eliocamp/ggnewscale
 #A
