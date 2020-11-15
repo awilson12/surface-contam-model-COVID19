@@ -308,7 +308,7 @@ behavior.sim<-function(caretype=c("IV","Obs","Rounds"),numsequence,prob.patient.
           whichhand<-runif(1,0,1) #Nan's paper says that the non-dominant hand does most face touching - Could 
           
           #transfer efficiency to mouth
-          TEtemp<-rtrunc(1,spec="norm",a=0,b=1,mean=.3390,sd=.2) #mean: Rusin et al. (2002); sd: Lopez et al. (2012) 0.15. New Rusin data SD= 20%
+          TEtemp<-rtrunc(1,spec="norm",a=0,b=1,mean=.3390,sd=.1318) #mean: Rusin et al. (2002); sd: Lopez et al. (2012) 0.15. New Rusin data SD= 13.18%
           
           #fraction of hand used in mouth contact
           SMtemp<-runif(1,0.04/5, 0.06/5) #single fingertip surface area fraction = front partial fingers fractional surface area / 5
