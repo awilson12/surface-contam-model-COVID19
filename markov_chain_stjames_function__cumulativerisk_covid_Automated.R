@@ -463,7 +463,6 @@ if (j<7 | j==19){
   prob.contam.between=probcontam[3]
 }
 
-#------------------------------------------------------this section needs to be checked
 
 if(j==1 | j==2 | j==7 | j==8 | j==13 | j==14){
   prob.patient.infect=contam[1]
