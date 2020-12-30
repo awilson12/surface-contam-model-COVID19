@@ -298,8 +298,12 @@ behavior.sim<-function(caretype=c("IV","Obs","Rounds"),numsequence,prob.patient.
           
           if (washnum<=.5){
             #then they wash their hands
-            handRbefore<-handRbefore*(1-(rtrunc(1,spec="norm",a=0,b=1,mean=abs(1-10^(-1.62)),sd=abs(1-10^0.12))))# change 06-07-2020 (1/10^rtrunc(1,spec="norm",a=0,b=6,mean=1.62,sd=0.12)) #based on dist from Marco
-            handLbefore<-handLbefore*(1-(rtrunc(1,spec="norm",a=0,b=1,mean=abs(1-10^(-1.62)),sd=abs(1-10^0.12))))# change 06-07-2020 (1/10^rtrunc(1,spec="norm",a=0,b=6,mean=1.62,sd=0.12)) #based on dist from Marco
+            handRbefore<-handRbefore*(1-(rtrunc(1,spec="norm",a=(1-10^(-4)),b=1,mean=abs(1-10^(-1.62)),sd=abs(1-10^0.12))))
+            # change 30-12-2020 (1-(rtrunc(1,spec="norm",a=0,b=1,mean=abs(1-10^(-1.62)),sd=abs(1-10^0.12)))) based on change to assumed max reduction
+            # change 06-07-2020 (1/10^rtrunc(1,spec="norm",a=0,b=6,mean=1.62,sd=0.12)) #based on dist from Marco
+            handLbefore<-handLbefore*(1-(rtrunc(1,spec="norm",a=(1-10^(-4)),b=1,mean=abs(1-10^(-1.62)),sd=abs(1-10^0.12))))
+            # change 30-12-2020 (1-(rtrunc(1,spec="norm",a=0,b=1,mean=abs(1-10^(-1.62)),sd=abs(1-10^0.12)))) based on change to assumed max reduction
+            # change 06-07-2020 (1/10^rtrunc(1,spec="norm",a=0,b=6,mean=1.62,sd=0.12)) #based on dist from Marco
           }else{
             #otherwise they use hand sanitizer
             handRbefore<-handRbefore*runif(1,1E-4,1E-2)#6-07-2020 change (1/10^runif(1,2,4))  #based on Kampf et al. (2020)
