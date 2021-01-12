@@ -69,6 +69,7 @@ for(j in 1:NUM.SIM){
       k.sall<-c(mean(IVframe$k.sall),mean(Roundsframe$k.sall),mean(Obsframe$k.sall))
       k.hall<-c(mean(IVframe$k.hall),mean(Roundsframe$k.hall),mean(Obsframe$k.hall))
       infect<-c(max(IVframe$infect),max(Roundsframe$infect),max(Obsframe$infect))
+      reduction<-c(mean(IVframe$reduce),mean(Roundsframe$reduce),mean(Obsframe$reduce))
       care<-c("IV","Rounds","Obs")
       
     }else{
@@ -87,6 +88,7 @@ for(j in 1:NUM.SIM){
       k.salltemp<-c(mean(IVframe$k.sall),mean(Roundsframe$k.sall),mean(Obsframe$k.sall))
       k.halltemp<-c(mean(IVframe$k.hall),mean(Roundsframe$k.hall),mean(Obsframe$k.hall))
       infecttemp<-c(max(IVframe$infect),max(Roundsframe$infect),max(Obsframe$infect))
+      reductiontemp<-c(mean(IVframe$reduce),mean(Roundsframe$reduce),mean(Obsframe$reduce))
       caretemp<-c("IV","Rounds","Obs")
       
       RNA<-c(RNA,RNAtemp)
@@ -105,6 +107,7 @@ for(j in 1:NUM.SIM){
       k.hall<-c(k.hall,k.halltemp)
       infect<-c(infect,infecttemp)
       care<-c(care,caretemp)
+      reduction<-c(reduction,reductiontemp)
     }
     
  
@@ -114,13 +117,13 @@ for(j in 1:NUM.SIM){
     scenario<-rep(sprintf("%s",sim.name),length(lambda))
     frame<-data.frame(lambda=lambda,beta=beta,duration=duration,SH=SH,surfconc=surfconc,k.sall=k.sall,k.hall=k.hall,
                       infect=infect,care=care,scenario=scenario,beta.dose=beta.dose,alpha=alpha,
-                      SM=SM,TEmouth=TEmouth,Ah.dose=Ah.dose,RNA=RNA)
+                      SM=SM,TEmouth=TEmouth,Ah.dose=Ah.dose,RNA=RNA,reduction=reduction)
     
   }else{
     scenariotemp<-rep(sprintf("%s",sim.name),length(lambda))
     frametemp<-data.frame(lambda=lambda,beta=beta,duration=duration,SH=SH,surfconc=surfconc,k.sall=k.sall,k.hall=k.hall,
                           infect=infect,care=care,scenario=scenariotemp,beta.dose=beta.dose,alpha=alpha,
-                          SM=SM,TEmouth=TEmouth,Ah.dose=Ah.dose,RNA=RNA)
+                          SM=SM,TEmouth=TEmouth,Ah.dose=Ah.dose,RNA=RNA,reduction=reduction)
     frame<-rbind(frame,frametemp)
     print(length(frame$lambda)/(j*1500))
           print(j)
