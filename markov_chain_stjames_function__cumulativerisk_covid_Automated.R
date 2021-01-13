@@ -257,7 +257,7 @@ behavior.sim<-function(caretype=c("IV","Obs","Rounds"),numsequence,prob.patient.
         }
       
       
-      }
+      }#end of care episode
       
       
       #---------------------------------- CALCULATION OF INFECTION RISK FOR CARE EPISODE --------------------------------------------------------------------------------------------------
@@ -298,18 +298,14 @@ behavior.sim<-function(caretype=c("IV","Obs","Rounds"),numsequence,prob.patient.
           
           if (washnum<=.5){
             #then they wash their hands
-            handRbefore<-handRbefore*(1-(rtrunc(1,spec="norm",a=0,b=(1-10^(-4)),mean=abs(1-10^(-1.62)),sd=abs(1-10^0.12))))
-            #handRbefore<-handRbefore*(1-(rtrunc(1,spec="norm",a=0,b=1,mean=abs(1-10^(-1.62)),sd=abs(1-10^0.12)))) #based on change to assumed max reduction
-            # change 06-07-2020 (1/10^rtrunc(1,spec="norm",a=0,b=6,mean=1.62,sd=0.12)) #based on dist from Marco
-            handLbefore<-handLbefore*(1-(rtrunc(1,spec="norm",a=0,b=(1-10^(-4)),mean=abs(1-10^(-1.62)),sd=abs(1-10^0.12))))
-            #handLbefore<-handLbefore*(1-(rtrunc(1,spec="norm",a=0,b=1,mean=abs(1-10^(-1.62)),sd=abs(1-10^0.12)))) #based on change to assumed max reduction
-            # change 06-07-2020 (1/10^rtrunc(1,spec="norm",a=0,b=6,mean=1.62,sd=0.12)) #based on dist from Marco
+            fracleft<-(1-(rtrunc(1,spec="norm",a=0,b=(1-10^(-4)),mean=abs(1-10^(-1.62)),sd=abs(1-10^0.12))))#based on change to assumed max reduction
           }else{
-            #otherwise they use hand sanitizer
-            handRbefore<-handRbefore*runif(1,1E-4,1E-2)#6-07-2020 change (1/10^runif(1,2,4))  #based on Kampf et al. (2020)
-            handLbefore<-handLbefore*runif(1,1E-4,1E-2)#6-07-2020 change (1/10^runif(1,2,4)) #based on Kampf et al. (2020)
+            fracleft<-runif(1,1E-4,1E-2) #6-07-2020 change (1/10^runif(1,2,4))  #based on Kampf et al. (2020)
           }
+          reduce<-(1-fracleft)
           
+          handRbefore<-handRbefore*fracleft
+          handLbefore<-handLbefore*fracleft
           #Determines which hand will be used for the hand-to-face contact
           whichhand<-runif(1,0,1) #Nan's paper says that the non-dominant hand does most face touching - Could 
           
@@ -364,6 +360,8 @@ behavior.sim<-function(caretype=c("IV","Obs","Rounds"),numsequence,prob.patient.
        if(infecttemp==0){
          infecttemp<-1*10^-15 #cannot have zero infection risk, so replace with small risk
        }
+        
+      # end of potential self inoculation moment
       
       SMsave<-rep(SMtemp,length(behavior))
       AH.dose<-rep(AHtemp,length(behavior))
@@ -373,9 +371,11 @@ behavior.sim<-function(caretype=c("IV","Obs","Rounds"),numsequence,prob.patient.
       infectrep<-rep(infecttemp,length(behavior))
       alpha<-rep(exactbp$alpha[pair],length(behavior))
       beta.doseresp<-rep(exactbp$Beta[pair],length(behavior))
+      reducesave<-rep(reduce,length(behavior))
       
       #saving concentrations for all rooms
       if (m==1){
+        reduceall<-reducesave
         SMall<-SMsave
         AH.doseall<-AH.dose
         TE.tempall<-TE.temp
@@ -399,6 +399,7 @@ behavior.sim<-function(caretype=c("IV","Obs","Rounds"),numsequence,prob.patient.
         k.hall<-k.h
         durationall<-duration
       }else{
+        reduceall<-c(reduceall,reducesave)
         SMall<-c(SMall,SMsave)
         AH.doseall<-c(AH.doseall,AH.dose)
         TE.tempall<-c(TE.tempall,TE.temp)
@@ -407,7 +408,6 @@ behavior.sim<-function(caretype=c("IV","Obs","Rounds"),numsequence,prob.patient.
         RNAinfectiousall<-c(RNAinfectiousall,RNAinfectious)
         handRnoglovetemp<-rep(handRbefore,length(behavior))
         handLnoglovetemp<-rep(handLbefore,length(behavior))
-        
         handRnoglove<-c(handRnoglove,handRnoglovetemp)
         handLnoglove<-c(handLnoglove,handLnoglovetemp)
         doseall<-c(doseall,doserep)
@@ -424,16 +424,16 @@ behavior.sim<-function(caretype=c("IV","Obs","Rounds"),numsequence,prob.patient.
         k.sall<-c(k.sall,k.s)
         k.hall<-c(k.hall,k.h)
         durationall<-c(durationall,duration)
-      }
+      } 
       
       
-    }
+    } #end of visit m
   
     # -------------------------------- SAVE OUTPUT FOR SIMULATION FOR SINGLE PERSON ----------------------------------------------------------------------------------
     exposure.frame.temp<-data.frame(dose=doseall,infect=infectall,patientnum=patientnum,handR=handRall,handL=handLall,hand=handall,handRnoglove=handRnoglove,handLnoglove=handLnoglove,
                                     behavior=behaviorall,duration=durationall,SH=SHall,lambda=lambdaall,beta=betaall,surfconc=surfconcall,k.sall=k.sall,k.hall=k.hall,
                                     RNAinfectiousall=RNAinfectiousall,alphaall=alphaall,beta.dose.all=beta.dose.all,SMall=SMall,
-                                    AH.doseall=AH.doseall,TE.tempall=TE.tempall)
+                                    AH.doseall=AH.doseall,TE.tempall=TE.tempall,reduceall=reduceall)
     
     behavior.total[[j]]<-behavior
     exposure.frame[[j]]<-exposure.frame.temp
@@ -441,7 +441,8 @@ behavior.sim<-function(caretype=c("IV","Obs","Rounds"),numsequence,prob.patient.
     finaldose[j]<-max(doseall)
 
     rm(behavior)
-  }
+    
+  }#end of iteration loop
   # --------------------------------- SAVE ALL OUTPUTS TO GLOBAL ENV --------------------------------------------------------------------------------------------------
   behavior.total<<-behavior.total
   exposure.frame<<-exposure.frame
@@ -548,9 +549,26 @@ saveRDS(Obs, file=sprintf("%s.Obs.exposure.frame.rds",sim.name))
   
 } # Automation loop end
 
+
 frameall<-data.frame(risk=risk,probcontambetween=as.character(prob.contam.between.all),
                      probpatientinfect=as.character(prob.patient.infect.all),
                      numvisit=as.character(numvisit.all),caretype=caretype,dose=dose)
+
+#summary of risks (all care types, all scenarios) referenced in results section
+summary(risk*100)
+summary(frameall$risk[frameall$caretype=="IV"]*100)
+summary(frameall$risk[frameall$caretype=="Rounds"]*100)
+summary(frameall$risk[frameall$caretype=="Observations"]*100)
+aov.results<-aov(risk ~ caretype,data=frameall)
+summary(aov.results)
+
+summary(frameall$risk[frameall$numvisit==7]*100)
+summary(frameall$risk[frameall$numvisit==14]*100)
+
+summary(frameall$risk[frameall$probpatientinfect==1]*100)
+summary(frameall$risk[frameall$probpatientinfect==0.5]*100)
+summary(frameall$risk[frameall$probpatientinfect==0.05]*100)
+sd(frameall$risk[frameall$probpatientinfect==0.05]*100)
 
 require(ggplot2)
 require(ggpubr)
@@ -649,203 +667,203 @@ ggplot(subset(df)) +
 
 #----------- summary statistics
 
-summary.stats<-function(probcontambetween,numvisit,probpatientinfect){
+#summary.stats<-function(probcontambetween,numvisit,probpatientinfect){
   
-  print(signif(summary(frameall$risk[frameall$probcontambetween==probcontambetween & 
-                                 frameall$numvisit==numvisit &
-                                 frameall$probpatientinfect==probpatientinfect]),2))
-  print(signif(min(frameall$risk[frameall$probcontambetween==probcontambetween & 
-                                       frameall$numvisit==numvisit &
-                                       frameall$probpatientinfect==probpatientinfect]),2))
-  
-  
+#  print(signif(summary(frameall$risk[frameall$probcontambetween==probcontambetween & 
+#                                 frameall$numvisit==numvisit &
+#                                 frameall$probpatientinfect==probpatientinfect]),2))
+#  print(signif(min(frameall$risk[frameall$probcontambetween==probcontambetween & 
+#                                       frameall$numvisit==numvisit &
+#                                       frameall$probpatientinfect==probpatientinfect]),2))
   
   
-  print(signif(sd(frameall$risk[frameall$probcontambetween==probcontambetween & 
-                            frameall$numvisit==numvisit &
-                            frameall$probpatientinfect==probpatientinfect]),2))
   
-}
+  
+#  print(signif(sd(frameall$risk[frameall$probcontambetween==probcontambetween & 
+#                            frameall$numvisit==numvisit &
+#                            frameall$probpatientinfect==probpatientinfect]),2))
+  
+#}
 
-summary.stats(probcontambetween=0.8,numvisit=1,probpatientinfect=1)
-
-
-summary.stats(probcontambetween=0.1,numvisit=7,probpatientinfect=0.05)
-summary.stats(probcontambetween=0.1,numvisit=7,probpatientinfect=0.5)
-summary.stats(probcontambetween=0.1,numvisit=7,probpatientinfect=1)
-
-summary.stats(probcontambetween=0.5,numvisit=7,probpatientinfect=0.05)
-summary.stats(probcontambetween=0.5,numvisit=7,probpatientinfect=0.5)
-summary.stats(probcontambetween=0.5,numvisit=7,probpatientinfect=1)
-
-summary.stats(probcontambetween=0.8,numvisit=7,probpatientinfect=0.05)
-summary.stats(probcontambetween=0.8,numvisit=7,probpatientinfect=0.5)
-summary.stats(probcontambetween=0.8,numvisit=7,probpatientinfect=1)
+#summary.stats(probcontambetween=0.8,numvisit=1,probpatientinfect=1)
 
 
-summary.stats(probcontambetween=0.1,numvisit=14,probpatientinfect=0.05)
-summary.stats(probcontambetween=0.1,numvisit=14,probpatientinfect=0.5)
-summary.stats(probcontambetween=0.1,numvisit=14,probpatientinfect=1)
+#summary.stats(probcontambetween=0.1,numvisit=7,probpatientinfect=0.05)
+#summary.stats(probcontambetween=0.1,numvisit=7,probpatientinfect=0.5)
+#summary.stats(probcontambetween=0.1,numvisit=7,probpatientinfect=1)
 
-summary.stats(probcontambetween=0.5,numvisit=14,probpatientinfect=0.05)
-summary.stats(probcontambetween=0.5,numvisit=14,probpatientinfect=0.5)
-summary.stats(probcontambetween=0.5,numvisit=14,probpatientinfect=1)
+#summary.stats(probcontambetween=0.5,numvisit=7,probpatientinfect=0.05)
+#summary.stats(probcontambetween=0.5,numvisit=7,probpatientinfect=0.5)
+#summary.stats(probcontambetween=0.5,numvisit=7,probpatientinfect=1)
 
-summary.stats(probcontambetween=0.8,numvisit=14,probpatientinfect=0.05)
-summary.stats(probcontambetween=0.8,numvisit=14,probpatientinfect=0.5)
-summary.stats(probcontambetween=0.8,numvisit=14,probpatientinfect=1)
+#summary.stats(probcontambetween=0.8,numvisit=7,probpatientinfect=0.05)
+#summary.stats(probcontambetween=0.8,numvisit=7,probpatientinfect=0.5)
+#summary.stats(probcontambetween=0.8,numvisit=7,probpatientinfect=1)
+
+
+#summary.stats(probcontambetween=0.1,numvisit=14,probpatientinfect=0.05)
+#summary.stats(probcontambetween=0.1,numvisit=14,probpatientinfect=0.5)
+#summary.stats(probcontambetween=0.1,numvisit=14,probpatientinfect=1)
+
+#summary.stats(probcontambetween=0.5,numvisit=14,probpatientinfect=0.05)
+#summary.stats(probcontambetween=0.5,numvisit=14,probpatientinfect=0.5)
+#summary.stats(probcontambetween=0.5,numvisit=14,probpatientinfect=1)
+
+#summary.stats(probcontambetween=0.8,numvisit=14,probpatientinfect=0.05)
+#summary.stats(probcontambetween=0.8,numvisit=14,probpatientinfect=0.5)
+#summary.stats(probcontambetween=0.8,numvisit=14,probpatientinfect=1)
 
 
 #----------- summary statistics per caretype
 
-summary.stats.caretype<-function(probcontambetween,numvisit,probpatientinfect,caretype=c("IV")){
+#summary.stats.caretype<-function(probcontambetween,numvisit,probpatientinfect,caretype=c("IV")){
   
-  print(signif(summary(frameall$risk[frameall$probcontambetween==probcontambetween & 
-                                       frameall$numvisit==numvisit &
-                                       frameall$probpatientinfect==probpatientinfect & frameall$caretype==caretype]),2))
-  print(signif(min(frameall$risk[frameall$probcontambetween==probcontambetween & 
-                                   frameall$numvisit==numvisit &
-                                   frameall$probpatientinfect==probpatientinfect & frameall$caretype==caretype]),2))
-  
-  
+#  print(signif(summary(frameall$risk[frameall$probcontambetween==probcontambetween & 
+#                                       frameall$numvisit==numvisit &
+#                                       frameall$probpatientinfect==probpatientinfect & frameall$caretype==caretype]),2))
+#  print(signif(min(frameall$risk[frameall$probcontambetween==probcontambetween & 
+#                                   frameall$numvisit==numvisit &
+#                                   frameall$probpatientinfect==probpatientinfect & frameall$caretype==caretype]),2))
   
   
-  print(signif(sd(frameall$risk[frameall$probcontambetween==probcontambetween & 
-                                  frameall$numvisit==numvisit &
-                                  frameall$probpatientinfect==probpatientinfect & frameall$caretype==caretype]),2))
   
-}
+  
+#  print(signif(sd(frameall$risk[frameall$probcontambetween==probcontambetween & 
+#                                  frameall$numvisit==numvisit &
+#                                  frameall$probpatientinfect==probpatientinfect & frameall$caretype==caretype]),2))
+  
+#}
 
-caretype="IV"
+#caretype="IV"
 
-summary.stats.caretype(probcontambetween=0.8,numvisit=1,probpatientinfect=1,caretype=caretype)
+#summary.stats.caretype(probcontambetween=0.8,numvisit=1,probpatientinfect=1,caretype=caretype)
 
-summary.stats.caretype(probcontambetween=0.1,numvisit=7,probpatientinfect=0.05,caretype=caretype)
-summary.stats.caretype(probcontambetween=0.1,numvisit=7,probpatientinfect=0.5,caretype=caretype)
-summary.stats.caretype(probcontambetween=0.1,numvisit=7,probpatientinfect=1,caretype=caretype)
+#summary.stats.caretype(probcontambetween=0.1,numvisit=7,probpatientinfect=0.05,caretype=caretype)
+#summary.stats.caretype(probcontambetween=0.1,numvisit=7,probpatientinfect=0.5,caretype=caretype)
+#summary.stats.caretype(probcontambetween=0.1,numvisit=7,probpatientinfect=1,caretype=caretype)
 
-summary.stats.caretype(probcontambetween=0.5,numvisit=7,probpatientinfect=0.05,caretype=caretype)
-summary.stats.caretype(probcontambetween=0.5,numvisit=7,probpatientinfect=0.5,caretype=caretype)
-summary.stats.caretype(probcontambetween=0.5,numvisit=7,probpatientinfect=1,caretype=caretype)
+#summary.stats.caretype(probcontambetween=0.5,numvisit=7,probpatientinfect=0.05,caretype=caretype)
+#summary.stats.caretype(probcontambetween=0.5,numvisit=7,probpatientinfect=0.5,caretype=caretype)
+#summary.stats.caretype(probcontambetween=0.5,numvisit=7,probpatientinfect=1,caretype=caretype)
 
-summary.stats.caretype(probcontambetween=0.8,numvisit=7,probpatientinfect=0.05,caretype=caretype)
-summary.stats.caretype(probcontambetween=0.8,numvisit=7,probpatientinfect=0.5,caretype=caretype)
-summary.stats.caretype(probcontambetween=0.8,numvisit=7,probpatientinfect=1,caretype=caretype)
+#summary.stats.caretype(probcontambetween=0.8,numvisit=7,probpatientinfect=0.05,caretype=caretype)
+#summary.stats.caretype(probcontambetween=0.8,numvisit=7,probpatientinfect=0.5,caretype=caretype)
+#summary.stats.caretype(probcontambetween=0.8,numvisit=7,probpatientinfect=1,caretype=caretype)
 
 
-summary.stats.caretype(probcontambetween=0.1,numvisit=14,probpatientinfect=0.05,caretype=caretype)
-summary.stats.caretype(probcontambetween=0.1,numvisit=14,probpatientinfect=0.5,caretype=caretype)
-summary.stats.caretype(probcontambetween=0.1,numvisit=14,probpatientinfect=1,caretype=caretype)
+#summary.stats.caretype(probcontambetween=0.1,numvisit=14,probpatientinfect=0.05,caretype=caretype)
+#summary.stats.caretype(probcontambetween=0.1,numvisit=14,probpatientinfect=0.5,caretype=caretype)
+#summary.stats.caretype(probcontambetween=0.1,numvisit=14,probpatientinfect=1,caretype=caretype)
 
-summary.stats.caretype(probcontambetween=0.5,numvisit=14,probpatientinfect=0.05,caretype=caretype)
-summary.stats.caretype(probcontambetween=0.5,numvisit=14,probpatientinfect=0.5,caretype=caretype)
-summary.stats.caretype(probcontambetween=0.5,numvisit=14,probpatientinfect=1,caretype=caretype)
+#summary.stats.caretype(probcontambetween=0.5,numvisit=14,probpatientinfect=0.05,caretype=caretype)
+#summary.stats.caretype(probcontambetween=0.5,numvisit=14,probpatientinfect=0.5,caretype=caretype)
+#summary.stats.caretype(probcontambetween=0.5,numvisit=14,probpatientinfect=1,caretype=caretype)
 
-summary.stats.caretype(probcontambetween=0.8,numvisit=14,probpatientinfect=0.05,caretype=caretype)
-summary.stats.caretype(probcontambetween=0.8,numvisit=14,probpatientinfect=0.5,caretype=caretype)
-summary.stats.caretype(probcontambetween=0.8,numvisit=14,probpatientinfect=1,caretype=caretype)
+#summary.stats.caretype(probcontambetween=0.8,numvisit=14,probpatientinfect=0.05,caretype=caretype)
+#summary.stats.caretype(probcontambetween=0.8,numvisit=14,probpatientinfect=0.5,caretype=caretype)
+#summary.stats.caretype(probcontambetween=0.8,numvisit=14,probpatientinfect=1,caretype=caretype)
 
 
 
 #---------------- dose summary stats
 
 
-summary.stats.dose<-function(probcontambetween,numvisit,probpatientinfect){
+#summary.stats.dose<-function(probcontambetween,numvisit,probpatientinfect){
   
-  print(signif(summary(frameall$dose[frameall$probcontambetween==probcontambetween & 
-                                       frameall$numvisit==numvisit &
-                                       frameall$probpatientinfect==probpatientinfect]),2))
-  print(signif(min(frameall$dose[frameall$probcontambetween==probcontambetween & 
-                                   frameall$numvisit==numvisit &
-                                   frameall$probpatientinfect==probpatientinfect]),2))
-  
-  
+#  print(signif(summary(frameall$dose[frameall$probcontambetween==probcontambetween & 
+#                                       frameall$numvisit==numvisit &
+#                                       frameall$probpatientinfect==probpatientinfect]),2))
+#  print(signif(min(frameall$dose[frameall$probcontambetween==probcontambetween & 
+#                                   frameall$numvisit==numvisit &
+#                                   frameall$probpatientinfect==probpatientinfect]),2))
   
   
-  print(signif(sd(frameall$dose[frameall$probcontambetween==probcontambetween & 
-                                  frameall$numvisit==numvisit &
-                                  frameall$probpatientinfect==probpatientinfect]),2))
   
-}
+  
+#  print(signif(sd(frameall$dose[frameall$probcontambetween==probcontambetween & 
+#                                  frameall$numvisit==numvisit &
+#                                  frameall$probpatientinfect==probpatientinfect]),2))
+  
+#}
 
 
-summary.stats.dose(probcontambetween=0.8,numvisit=1,probpatientinfect=1)
+#summary.stats.dose(probcontambetween=0.8,numvisit=1,probpatientinfect=1)
 
-summary.stats.dose(probcontambetween=0.1,numvisit=7,probpatientinfect=0.05)
-summary.stats.dose(probcontambetween=0.1,numvisit=7,probpatientinfect=0.5)
-summary.stats.dose(probcontambetween=0.1,numvisit=7,probpatientinfect=1)
+#summary.stats.dose(probcontambetween=0.1,numvisit=7,probpatientinfect=0.05)
+#summary.stats.dose(probcontambetween=0.1,numvisit=7,probpatientinfect=0.5)
+#summary.stats.dose(probcontambetween=0.1,numvisit=7,probpatientinfect=1)
 
-summary.stats.dose(probcontambetween=0.5,numvisit=7,probpatientinfect=0.05)
-summary.stats.dose(probcontambetween=0.5,numvisit=7,probpatientinfect=0.5)
-summary.stats.dose(probcontambetween=0.5,numvisit=7,probpatientinfect=1)
+#summary.stats.dose(probcontambetween=0.5,numvisit=7,probpatientinfect=0.05)
+#summary.stats.dose(probcontambetween=0.5,numvisit=7,probpatientinfect=0.5)
+#summary.stats.dose(probcontambetween=0.5,numvisit=7,probpatientinfect=1)
 
-summary.stats.dose(probcontambetween=0.8,numvisit=7,probpatientinfect=0.05)
-summary.stats.dose(probcontambetween=0.8,numvisit=7,probpatientinfect=0.5)
-summary.stats.dose(probcontambetween=0.8,numvisit=7,probpatientinfect=1)
+#summary.stats.dose(probcontambetween=0.8,numvisit=7,probpatientinfect=0.05)
+#summary.stats.dose(probcontambetween=0.8,numvisit=7,probpatientinfect=0.5)
+#summary.stats.dose(probcontambetween=0.8,numvisit=7,probpatientinfect=1)
 
 
-summary.stats.dose(probcontambetween=0.1,numvisit=14,probpatientinfect=0.05)
-summary.stats.dose(probcontambetween=0.1,numvisit=14,probpatientinfect=0.5)
-summary.stats.dose(probcontambetween=0.1,numvisit=14,probpatientinfect=1)
+#summary.stats.dose(probcontambetween=0.1,numvisit=14,probpatientinfect=0.05)
+#summary.stats.dose(probcontambetween=0.1,numvisit=14,probpatientinfect=0.5)
+#summary.stats.dose(probcontambetween=0.1,numvisit=14,probpatientinfect=1)
 
-summary.stats.dose(probcontambetween=0.5,numvisit=14,probpatientinfect=0.05)
-summary.stats.dose(probcontambetween=0.5,numvisit=14,probpatientinfect=0.5)
-summary.stats.dose(probcontambetween=0.5,numvisit=14,probpatientinfect=1)
+#summary.stats.dose(probcontambetween=0.5,numvisit=14,probpatientinfect=0.05)
+#summary.stats.dose(probcontambetween=0.5,numvisit=14,probpatientinfect=0.5)
+#summary.stats.dose(probcontambetween=0.5,numvisit=14,probpatientinfect=1)
 
-summary.stats.dose(probcontambetween=0.8,numvisit=14,probpatientinfect=0.05)
-summary.stats.dose(probcontambetween=0.8,numvisit=14,probpatientinfect=0.5)
-summary.stats.dose(probcontambetween=0.8,numvisit=14,probpatientinfect=1)
+#summary.stats.dose(probcontambetween=0.8,numvisit=14,probpatientinfect=0.05)
+#summary.stats.dose(probcontambetween=0.8,numvisit=14,probpatientinfect=0.5)
+#summary.stats.dose(probcontambetween=0.8,numvisit=14,probpatientinfect=1)
 
 
 #---------------- dose summary stats, care type specific
 
 
-summary.stats.dose.caretype<-function(probcontambetween,numvisit,probpatientinfect,caretype=c("IV")){
+#summary.stats.dose.caretype<-function(probcontambetween,numvisit,probpatientinfect,caretype=c("IV")){
   
-  print(signif(summary(frameall$dose[frameall$probcontambetween==probcontambetween & 
-                                       frameall$numvisit==numvisit &
-                                       frameall$probpatientinfect==probpatientinfect & frameall$caretype==caretype]),2))
-  print(signif(min(frameall$dose[frameall$probcontambetween==probcontambetween & 
-                                   frameall$numvisit==numvisit &
-                                   frameall$probpatientinfect==probpatientinfect & frameall$caretype==caretype]),2))
-  
-  
+#  print(signif(summary(frameall$dose[frameall$probcontambetween==probcontambetween & 
+#                                       frameall$numvisit==numvisit &
+#                                       frameall$probpatientinfect==probpatientinfect & frameall$caretype==caretype]),2))
+#  print(signif(min(frameall$dose[frameall$probcontambetween==probcontambetween & 
+#                                   frameall$numvisit==numvisit &
+#                                   frameall$probpatientinfect==probpatientinfect & frameall$caretype==caretype]),2))
   
   
-  print(signif(sd(frameall$dose[frameall$probcontambetween==probcontambetween & 
-                                  frameall$numvisit==numvisit &
-                                  frameall$probpatientinfect==probpatientinfect & frameall$caretype==caretype]),2))
   
-}
+  
+#  print(signif(sd(frameall$dose[frameall$probcontambetween==probcontambetween & 
+#                                  frameall$numvisit==numvisit &
+#                                  frameall$probpatientinfect==probpatientinfect & frameall$caretype==caretype]),2))
+  
+#}
 
-caretype="IV"
+#caretype="IV"
 
-summary.stats.dose.caretype(probcontambetween=0.8,numvisit=1,probpatientinfect=1,caretype=caretype)
+#summary.stats.dose.caretype(probcontambetween=0.8,numvisit=1,probpatientinfect=1,caretype=caretype)
 
-summary.stats.dose.caretype(probcontambetween=0.1,numvisit=7,probpatientinfect=0.05,caretype=caretype)
-summary.stats.dose.caretype(probcontambetween=0.1,numvisit=7,probpatientinfect=0.5,caretype=caretype)
-summary.stats.dose.caretype(probcontambetween=0.1,numvisit=7,probpatientinfect=1,caretype=caretype)
+#summary.stats.dose.caretype(probcontambetween=0.1,numvisit=7,probpatientinfect=0.05,caretype=caretype)
+#summary.stats.dose.caretype(probcontambetween=0.1,numvisit=7,probpatientinfect=0.5,caretype=caretype)
+#summary.stats.dose.caretype(probcontambetween=0.1,numvisit=7,probpatientinfect=1,caretype=caretype)
 
-summary.stats.dose.caretype(probcontambetween=0.5,numvisit=7,probpatientinfect=0.05,caretype=caretype)
-summary.stats.dose.caretype(probcontambetween=0.5,numvisit=7,probpatientinfect=0.5,caretype=caretype)
-summary.stats.dose.caretype(probcontambetween=0.5,numvisit=7,probpatientinfect=1,caretype=caretype)
+#summary.stats.dose.caretype(probcontambetween=0.5,numvisit=7,probpatientinfect=0.05,caretype=caretype)
+#summary.stats.dose.caretype(probcontambetween=0.5,numvisit=7,probpatientinfect=0.5,caretype=caretype)
+#summary.stats.dose.caretype(probcontambetween=0.5,numvisit=7,probpatientinfect=1,caretype=caretype)
 
-summary.stats.dose.caretype(probcontambetween=0.8,numvisit=7,probpatientinfect=0.05,caretype=caretype)
-summary.stats.dose.caretype(probcontambetween=0.8,numvisit=7,probpatientinfect=0.5,caretype=caretype)
-summary.stats.dose.caretype(probcontambetween=0.8,numvisit=7,probpatientinfect=1,caretype=caretype)
+#summary.stats.dose.caretype(probcontambetween=0.8,numvisit=7,probpatientinfect=0.05,caretype=caretype)
+#summary.stats.dose.caretype(probcontambetween=0.8,numvisit=7,probpatientinfect=0.5,caretype=caretype)
+#summary.stats.dose.caretype(probcontambetween=0.8,numvisit=7,probpatientinfect=1,caretype=caretype)
 
 
-summary.stats.dose.caretype(probcontambetween=0.1,numvisit=14,probpatientinfect=0.05,caretype=caretype)
-summary.stats.dose.caretype(probcontambetween=0.1,numvisit=14,probpatientinfect=0.5,caretype=caretype)
-summary.stats.dose.caretype(probcontambetween=0.1,numvisit=14,probpatientinfect=1,caretype=caretype)
+#summary.stats.dose.caretype(probcontambetween=0.1,numvisit=14,probpatientinfect=0.05,caretype=caretype)
+#summary.stats.dose.caretype(probcontambetween=0.1,numvisit=14,probpatientinfect=0.5,caretype=caretype)
+#summary.stats.dose.caretype(probcontambetween=0.1,numvisit=14,probpatientinfect=1,caretype=caretype)
 
-summary.stats.dose.caretype(probcontambetween=0.5,numvisit=14,probpatientinfect=0.05,caretype=caretype)
-summary.stats.dose.caretype(probcontambetween=0.5,numvisit=14,probpatientinfect=0.5,caretype=caretype)
-summary.stats.dose.caretype(probcontambetween=0.5,numvisit=14,probpatientinfect=1,caretype=caretype)
+#summary.stats.dose.caretype(probcontambetween=0.5,numvisit=14,probpatientinfect=0.05,caretype=caretype)
+#summary.stats.dose.caretype(probcontambetween=0.5,numvisit=14,probpatientinfect=0.5,caretype=caretype)
+#summary.stats.dose.caretype(probcontambetween=0.5,numvisit=14,probpatientinfect=1,caretype=caretype)
 
-summary.stats.dose.caretype(probcontambetween=0.8,numvisit=14,probpatientinfect=0.05,caretype=caretype)
-summary.stats.dose.caretype(probcontambetween=0.8,numvisit=14,probpatientinfect=0.5,caretype=caretype)
-summary.stats.dose.caretype(probcontambetween=0.8,numvisit=14,probpatientinfect=1,caretype=caretype)
+#summary.stats.dose.caretype(probcontambetween=0.8,numvisit=14,probpatientinfect=0.05,caretype=caretype)
+#summary.stats.dose.caretype(probcontambetween=0.8,numvisit=14,probpatientinfect=0.5,caretype=caretype)
+#summary.stats.dose.caretype(probcontambetween=0.8,numvisit=14,probpatientinfect=1,caretype=caretype)
 
 
 
