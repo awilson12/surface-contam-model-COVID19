@@ -252,11 +252,14 @@ N<-ggplot(frametemp)+geom_bin2d(aes(x=beta.dose,y=infect))+
   scale_y_continuous(trans="log10",name="Infection Risk")+theme_pubr()+
   scale_x_continuous(name="Beta (Dose-response)",trans="log10")+
   scale_fill_continuous(type = "viridis") 
-
+O<-ggplot(frametemp)+geom_bin2d(aes(x=reduction,y=infect))+
+  scale_y_continuous(trans="log10",name="Infection Risk")+theme_pubr()+
+  scale_x_continuous(name="Beta (Dose-response)",trans="log10")+
+  scale_fill_continuous(type = "viridis") 
 
 #windows()
 ggarrange(A,B,C,D,E,G,H,I,
-          J,K,L,M,N,common.legend = TRUE)
+          J,K,L,M,N,O,common.legend = TRUE)
 
 # ggplot(subset(frameall, aes(x = risk, y = probpatientinfect, fill = ..x..)) +
 #   geom_density_ridges_gradient(scale = 3, rel_min_height = 0.01) +
