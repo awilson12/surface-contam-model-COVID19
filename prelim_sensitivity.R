@@ -55,11 +55,11 @@ for(j in 1:NUM.SIM){
     if (i ==1){
       
       RNA<-c(mean(IVframe$RNAinfectiousall[!is.na(IVframe$RNAinfectiousall)]),mean(Roundsframe$RNAinfectiousall[!is.na(Roundsframe$RNAinfectiousall)]),mean(Obsframe$RNAinfectiousall[!is.na(Obsframe$RNAinfectiousall)]))
-      SM<-c(mean(IVframe$SMall[IVframe$SMall>0]),mean(Roundsframe$SMall[Roundsframe$SMall>0]),mean(Obsframe$SMall[Obsframe$SMall>0]))
-      TEmouth<-c(mean(IVframe$TE.tempall[IVframe$TE.tempall>0]),mean(Roundsframe$TE.tempall[Roundsframe$TE.tempall>0]),mean(Obsframe$TE.tempall[Obsframe$TE.tempall>0]))
-      Ah.dose<-c(mean(IVframe$AH.doseall[IVframe$AH.doseall>0]),mean(Roundsframe$AH.doseall[Roundsframe$AH.doseall>0]),mean(Obsframe$AH.doseall[Obsframe$AH.doseall>0]))
-      beta.dose<-c(mean(IVframe$beta.dose.all),mean(Roundsframe$beta.dose.all),mean(Obsframe$beta.dose.all))
-      alpha<-c(mean(IVframe$alphaall),mean(Roundsframe$alphaall),mean(Obsframe$alphaall))
+      SM<-c(mean(IVframe$SMall[!is.na(IVframe$SMall)]),mean(Roundsframe$SMall[!is.na(Roundsframe$SMall)]),mean(Obsframe$SMall[!is.na(Obsframe$SMall)]))
+      TEmouth<-c(mean(IVframe$TE.tempall[!is.na(IVframe$TE.tempall)]),mean(Roundsframe$TE.tempall[!is.na(Roundsframe$TE.tempall)]),mean(Obsframe$TE.tempall[!is.na(Obsframe$TE.tempall)]))
+      Ah.dose<-c(mean(IVframe$AH.doseall[!is.na(IVframe$AH.doseall)]),mean(Roundsframe$AH.doseall[!is.na(Roundsframe$AH.doseall)]),mean(Obsframe$AH.doseall[!is.na(Obsframe$AH.doseall)]))
+      beta.dose<-c(mean(IVframe$beta.dose.all[!is.na(IVframe$beta.dose.all)]),mean(Roundsframe$beta.dose.all[!is.na(Roundsframe$beta.dose.all)]),mean(Obsframe$beta.dose.all[!is.na(Obsframe$beta.dose.all)]))
+      alpha<-c(mean(!is.na(IVframe$alphaall)),mean(!is.na(Roundsframe$alphaall)),mean(!is.na(Obsframe$alphaall)))
       lambda<-c(mean(IVframe$lambda),mean(Roundsframe$lambda),mean(Obsframe$lambda))
       beta<-c(mean(IVframe$beta),mean(Roundsframe$beta),mean(Obsframe$beta))
       rnainfect<-c(mean(IVframe$RNAinfectiousall),mean(Roundsframe$RNAinfectiousall),mean(Obsframe$RNAinfectiousall))
@@ -68,17 +68,21 @@ for(j in 1:NUM.SIM){
       surfconc<-c(mean(IVframe$surfconc),mean(Roundsframe$surfconc),mean(Obsframe$surfconc))
       k.sall<-c(mean(IVframe$k.sall),mean(Roundsframe$k.sall),mean(Obsframe$k.sall))
       k.hall<-c(mean(IVframe$k.hall),mean(Roundsframe$k.hall),mean(Obsframe$k.hall))
-      infect<-c(max(IVframe$infect),max(Roundsframe$infect),max(Obsframe$infect))
-      reduction<-c(mean(IVframe$reduce),mean(Roundsframe$reduce),mean(Obsframe$reduce))
+      infect<-c(IVframe$infect[!is.na(IVframe$infect) & IVframe$patientnum==max(IVframe$patientnum)],
+                Roundsframe$infect[!is.na(Roundsframe$infect) & Roundsframe$patientnum==max(Roundsframe$patientnum)],
+                Obsframe$infect[!is.na(Obsframe$infect) & Obsframe$patientnum==max(Obsframe$patientnum)])
+      reductionfreq<-c(length(IVframe$reduce[!is.na(IVframe$reduce)]),length(Roundsframe$reduce[!is.na(Roundsframe$reduce)]),length(Obsframe$reduce[!is.na(Obsframe$reduce)]))
+      reduction<-c(mean(IVframe$reduce[!is.na(IVframe$reduce)]),mean(Roundsframe$reduce[!is.na(Roundsframe$reduce)]),mean(Obsframe$reduce[!is.na(Obsframe$reduce)]))
+      numcontact<-c(length(IVframe$reduce),length(Roundsframe$reduce),length(Obsframe$reduce))
       care<-c("IV","Rounds","Obs")
       
     }else{
       RNAtemp<-c(mean(IVframe$RNAinfectiousall[!is.na(IVframe$RNAinfectiousall)]),mean(Roundsframe$RNAinfectiousall[!is.na(Roundsframe$RNAinfectiousall)]),mean(Obsframe$RNAinfectiousall[!is.na(Obsframe$RNAinfectiousall)]))
-      SMtemp<-c(mean(IVframe$SMall[IVframe$SMall>0]),mean(Roundsframe$SMall[Roundsframe$SMall>0]),mean(Obsframe$SMall[Obsframe$SMall>0]))
-      TEmouthtemp<-c(mean(IVframe$TE.tempall[IVframe$TE.tempall>0]),mean(Roundsframe$TE.tempall[Roundsframe$TE.tempall>0]),mean(Obsframe$TE.tempall[Obsframe$TE.tempall>0]))
-      Ah.dosetemp<-c(mean(IVframe$AH.doseall[IVframe$AH.doseall>0]),mean(Roundsframe$AH.doseall[Roundsframe$AH.doseall>0]),mean(Obsframe$AH.doseall[Obsframe$AH.doseall>0]))
-      beta.dosetemp<-c(mean(IVframe$beta.dose.all),mean(Roundsframe$beta.dose.all),mean(Obsframe$beta.dose.all))
-      alphatemp<-c(mean(IVframe$alphaall),mean(Roundsframe$alphaall),mean(Obsframe$alphaall))
+      SMtemp<-c(mean(IVframe$SMall[!is.na(IVframe$SMall)]),mean(Roundsframe$SMall[!is.na(Roundsframe$SMall)]),mean(Obsframe$SMall[!is.na(Obsframe$SMall)]))
+      TEmouthtemp<-c(mean(IVframe$TE.tempall[!is.na(IVframe$TE.tempall)]),mean(Roundsframe$TE.tempall[!is.na(Roundsframe$TE.tempall)]),mean(Obsframe$TE.tempall[!is.na(Obsframe$TE.tempall)]))
+      Ah.dosetemp<-c(mean(IVframe$AH.doseall[!is.na(IVframe$AH.doseall)]),mean(Roundsframe$AH.doseall[!is.na(Roundsframe$AH.doseall)]),mean(Obsframe$AH.doseall[!is.na(Obsframe$AH.doseall)]))
+      beta.dosetemp<-c(mean(IVframe$beta.dose.all[!is.na(IVframe$beta.dose.all)]),mean(Roundsframe$beta.dose.all[!is.na(Roundsframe$beta.dose.all)]),mean(Obsframe$beta.dose.all[!is.na(Obsframe$beta.dose.all)]))
+      alphatemp<-c(mean(!is.na(IVframe$alphaall)),mean(!is.na(Roundsframe$alphaall)),mean(!is.na(Obsframe$alphaall)))
       lambdatemp<-c(mean(IVframe$lambda),mean(Roundsframe$lambda),mean(Obsframe$lambda))
       betatemp<-c(mean(IVframe$beta),mean(Roundsframe$beta),mean(Obsframe$beta))
       rnainfecttemp<-c(mean(IVframe$RNAinfectiousall),mean(Roundsframe$RNAinfectiousall),mean(Obsframe$RNAinfectiousall))
@@ -87,9 +91,13 @@ for(j in 1:NUM.SIM){
       surfconctemp<-c(mean(IVframe$surfconc),mean(Roundsframe$surfconc),mean(Obsframe$surfconc))
       k.salltemp<-c(mean(IVframe$k.sall),mean(Roundsframe$k.sall),mean(Obsframe$k.sall))
       k.halltemp<-c(mean(IVframe$k.hall),mean(Roundsframe$k.hall),mean(Obsframe$k.hall))
-      infecttemp<-c(max(IVframe$infect),max(Roundsframe$infect),max(Obsframe$infect))
-      reductiontemp<-c(mean(IVframe$reduce),mean(Roundsframe$reduce),mean(Obsframe$reduce))
-      caretemp<-c("IV","Rounds","Obs")
+      infecttemp<-c(IVframe$infect[!is.na(IVframe$infect) & IVframe$patientnum==max(IVframe$patientnum)],
+                Roundsframe$infect[!is.na(Roundsframe$infect) & Roundsframe$patientnum==max(Roundsframe$patientnum)],
+                Obsframe$infect[!is.na(Obsframe$infect) & Obsframe$patientnum==max(Obsframe$patientnum)])
+      reductionfreqtemp<-c(length(IVframe$reduce[!is.na(IVframe$reduce)]),length(Roundsframe$reduce[!is.na(Roundsframe$reduce)]),length(Obsframe$reduce[!is.na(Obsframe$reduce)]))
+      reductiontemp<-c(mean(IVframe$reduce[!is.na(IVframe$reduce)]),mean(Roundsframe$reduce[!is.na(Roundsframe$reduce)]),mean(Obsframe$reduce[!is.na(Obsframe$reduce)]))
+      numcontacttemp<-c(length(IVframe$reduce),length(Roundsframe$reduce),length(Obsframe$reduce))
+      caretemptemp<-c("IV","Rounds","Obs")
       
       RNA<-c(RNA,RNAtemp)
       SM<-c(SM,SMtemp)
@@ -107,6 +115,8 @@ for(j in 1:NUM.SIM){
       k.hall<-c(k.hall,k.halltemp)
       infect<-c(infect,infecttemp)
       care<-c(care,caretemp)
+      numcontact<-c(numcontact,numcontacttemp)
+      reductionfreq<-c(reductionfreq,reductionfreqtemp)
       reduction<-c(reduction,reductiontemp)
     }
     
@@ -117,13 +127,15 @@ for(j in 1:NUM.SIM){
     scenario<-rep(sprintf("%s",sim.name),length(lambda))
     frame<-data.frame(lambda=lambda,beta=beta,duration=duration,SH=SH,surfconc=surfconc,k.sall=k.sall,k.hall=k.hall,
                       infect=infect,care=care,scenario=scenario,beta.dose=beta.dose,alpha=alpha,
-                      SM=SM,TEmouth=TEmouth,Ah.dose=Ah.dose,RNA=RNA,reduction=reduction)
+                      SM=SM,TEmouth=TEmouth,Ah.dose=Ah.dose,RNA=RNA,numcontact=numcontact,
+                      reductionfreq=reductionfreq,reduction=reduction)
     
   }else{
     scenariotemp<-rep(sprintf("%s",sim.name),length(lambda))
     frametemp<-data.frame(lambda=lambda,beta=beta,duration=duration,SH=SH,surfconc=surfconc,k.sall=k.sall,k.hall=k.hall,
                           infect=infect,care=care,scenario=scenariotemp,beta.dose=beta.dose,alpha=alpha,
-                          SM=SM,TEmouth=TEmouth,Ah.dose=Ah.dose,RNA=RNA,reduction=reduction)
+                          SM=SM,TEmouth=TEmouth,Ah.dose=Ah.dose,RNA=RNA,numcontact=numcontact,
+                          reductionfreq=reductionfreq,reduction=reduction)
     frame<-rbind(frame,frametemp)
     print(length(frame$lambda)/(j*1500))
           print(j)
@@ -136,6 +148,9 @@ for(j in 1:NUM.SIM){
 require(reshape2)
 require(ggplot2)
 require(ggpubr)
+
+ggplot(frame)+geom_point(aes(x=reduction,y=infect))+facet_wrap(~care)+
+  scale_y_continuous(trans="log10")
 
 frametemp<-frame[frame$infect>1e-15,]
 framecor = subset(frametemp, select = -c(care,scenario) )
@@ -252,9 +267,9 @@ N<-ggplot(frametemp)+geom_bin2d(aes(x=beta.dose,y=infect))+
   scale_y_continuous(trans="log10",name="Infection Risk")+theme_pubr()+
   scale_x_continuous(name="Beta (Dose-response)",trans="log10")+
   scale_fill_continuous(type = "viridis") 
-O<-ggplot(frametemp)+geom_bin2d(aes(x=reduction,y=infect))+
+O<-ggplot(frametemp)+geom_bin2d(aes(x=reduction*100,y=infect))+
   scale_y_continuous(trans="log10",name="Infection Risk")+theme_pubr()+
-  scale_x_continuous(name="Beta (Dose-response)",trans="log10")+
+  scale_x_continuous(name="Hand Hygiene Efficacy (%)",trans="log10")+
   scale_fill_continuous(type = "viridis") 
 
 #windows()
