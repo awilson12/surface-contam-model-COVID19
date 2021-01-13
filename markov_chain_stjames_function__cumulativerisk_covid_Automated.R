@@ -576,8 +576,24 @@ summary(frameall$risk[frameall$probpatientinfect==0.5]*100)
 summary(frameall$risk[frameall$probpatientinfect==0.05]*100)
 sd(frameall$risk[frameall$probpatientinfect==0.05]*100)
 
+
+summary(frameall$risk[frameall$probcontambetween==0.1]*100)
+summary(frameall$risk[frameall$probcontambetween==0.8]*100)
+
+
 summary(frameall$risk[frameall$probpatientinfect==1 & frameall$probcontambetween==0.1]*100)
 summary(frameall$risk[frameall$probpatientinfect==1 & frameall$probcontambetween==0.8]*100)
+
+#num contacts for control scenario
+summary(frame$numcontact[frame$care=="IV" & frame$scenario=="control"])
+sd(frame$numcontact[frame$care=="IV" & frame$scenario=="control"])
+
+summary(frame$numcontact[frame$care=="Rounds" & frame$scenario=="control"])
+sd(frame$numcontact[frame$care=="Rounds" & frame$scenario=="control"])
+
+summary(frame$numcontact[frame$care=="Obs" & frame$scenario=="control"])
+sd(frame$numcontact[frame$care=="Obs" & frame$scenario=="control"])
+
 
 require(ggplot2)
 require(ggpubr)
