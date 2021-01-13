@@ -285,6 +285,7 @@ behavior.sim<-function(caretype=c("IV","Obs","Rounds"),numsequence,prob.patient.
         TEtemp<-0
         SMtemp<-0
         AHtemp<-0
+        reduce<-NA
         
         randomnum<-runif(1,0,1)
         
@@ -363,15 +364,15 @@ behavior.sim<-function(caretype=c("IV","Obs","Rounds"),numsequence,prob.patient.
         
       # end of potential self inoculation moment
       
-      SMsave<-rep(SMtemp,length(behavior))
-      AH.dose<-rep(AHtemp,length(behavior))
-      TE.temp<-rep(TEtemp,length(behavior))
+      SMsave<-c(SMtemp,rep(NA,length(behavior)-1))
+      AH.dose<-c(AHtemp,rep(NA,length(behavior)-1))
+      TE.temp<-c(TEtemp,rep(NA,length(behavior)-1))
       
-      doserep<-rep(dose,length(behavior))
-      infectrep<-rep(infecttemp,length(behavior))
-      alpha<-rep(exactbp$alpha[pair],length(behavior))
-      beta.doseresp<-rep(exactbp$Beta[pair],length(behavior))
-      reducesave<-rep(reduce,length(behavior))
+      doserep<-c(dose,rep(NA,length(behavior)-1))
+      infectrep<-c(infecttemp,rep(NA,length(behavior)-1))
+      alpha<-c(exactbp$alpha[pair],rep(NA,length(behavior)-1))
+      beta.doseresp<-c(exactbp$Beta[pair],rep(NA,length(behavior)-1))
+      reducesave<-c(reduce,rep(NA,length(behavior)-1))
       
       #saving concentrations for all rooms
       if (m==1){
@@ -437,8 +438,8 @@ behavior.sim<-function(caretype=c("IV","Obs","Rounds"),numsequence,prob.patient.
     
     behavior.total[[j]]<-behavior
     exposure.frame[[j]]<-exposure.frame.temp
-    finalinfectionrisk[j]<-max(infectall)
-    finaldose[j]<-max(doseall)
+    finalinfectionrisk[j]<-exposure.frame.temp$infect[!is.na(exposure.frame.temp$infect) & exposure.frame.temp$patientnum==max(exposure.frame.temp$patientnum)]
+    finaldose[j]<-exposure.frame.temp$dose[!is.na(exposure.frame.temp$dose) & exposure.frame.temp$patientnum==max(exposure.frame.temp$patientnum)]
 
     rm(behavior)
     
@@ -555,9 +556,14 @@ frameall<-data.frame(risk=risk,probcontambetween=as.character(prob.contam.betwee
                      numvisit=as.character(numvisit.all),caretype=caretype,dose=dose)
 
 #summary of risks (all care types, all scenarios) referenced in results section
-summary(risk*100)
+summary(frameall$risk[frameall$numvisit==1]*100)
+
 summary(frameall$risk[frameall$caretype=="IV"]*100)
+sd(frameall$risk[frameall$caretype=="IV"]*100)
+
 summary(frameall$risk[frameall$caretype=="Rounds"]*100)
+sd(frameall$risk[frameall$caretype=="Rounds"]*100)
+
 summary(frameall$risk[frameall$caretype=="Observations"]*100)
 aov.results<-aov(risk ~ caretype,data=frameall)
 summary(aov.results)
@@ -569,6 +575,9 @@ summary(frameall$risk[frameall$probpatientinfect==1]*100)
 summary(frameall$risk[frameall$probpatientinfect==0.5]*100)
 summary(frameall$risk[frameall$probpatientinfect==0.05]*100)
 sd(frameall$risk[frameall$probpatientinfect==0.05]*100)
+
+summary(frameall$risk[frameall$probpatientinfect==1 & frameall$probcontambetween==0.1]*100)
+summary(frameall$risk[frameall$probpatientinfect==1 & frameall$probcontambetween==0.8]*100)
 
 require(ggplot2)
 require(ggpubr)
