@@ -40,7 +40,7 @@ for(j in 1:NUM.SIM){
   if(sim.name=="control"){if(dir.exists("control")==FALSE){dir.create("control"); setwd("control")}else{setwd("control")}}
   
   
-  numiterations<-500 
+  numiterations<-1000 
   
   IV<-readRDS(file=sprintf("%s.IV.exposure.frame.rds",sim.name))
   Rounds<-readRDS(file=sprintf("%s.Rounds.exposure.frame.rds",sim.name))
